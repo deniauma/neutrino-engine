@@ -1,0 +1,11 @@
+[package]
+name = "quantum-engine"
+version = "0.1.0"
+authors = ["mdeniaud <mathieu.deniaud@crossknowledge.com>"]
+edition = "2018"
+
+[dependencies]
+glutin = "0.19.0"
+gl = "*"
+image = "*"
+math = { path = "math"}
