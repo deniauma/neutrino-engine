@@ -1,5 +1,5 @@
 [package]
-name = "quantum-engine"
+name = "neutrino-engine"
 version = "0.1.0"
 authors = ["mdeniaud <mathieu.deniaud@crossknowledge.com>"]
 edition = "2018"
