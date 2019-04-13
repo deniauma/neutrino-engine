@@ -230,7 +230,9 @@ impl Engine {
             //Calculate delta time since last loop iteration
             let elapsed_time = start.elapsed();
             let delta_time = elapsed_time - prev_elapsed_time;
-            window.set_title(format!("{} fps ({} ms)", 1000000 / Self::duration_to_micros(delta_time), Self::duration_to_millis(delta_time)).as_str());
+            if delta_time.subsec_micros() > 0 {
+                window.set_title(format!("{} fps ({} ms)", 1000000 / Self::duration_to_micros(delta_time), Self::duration_to_millis(delta_time)).as_str());
+            }
             prev_elapsed_time = elapsed_time;
 
             events.poll_events(|event| match event {

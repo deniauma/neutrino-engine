@@ -2,6 +2,7 @@ extern crate image;
 
 use image::GenericImageView;
 use std::ffi::CString;
+use math::Mat4;
 
 pub struct MaterialBuilder {}
 
@@ -203,6 +204,13 @@ impl Shader {
 
     pub fn use_program(&self) {
         unsafe { gl::UseProgram(self.id) };
+    }
+
+    pub fn set_mat4(&self, name: &str, mat: Mat4) {
+        let mat_ptr = &mat.data[0][0] as *const f32;
+        unsafe {
+            gl::UniformMatrix4fv(gl::GetUniformLocation(self.id, CString::new(name).unwrap().as_ptr()), 1, gl::FALSE, mat_ptr);
+        }
     }
 }
 

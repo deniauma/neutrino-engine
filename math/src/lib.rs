@@ -1,3 +1,5 @@
+pub mod transforms;
+
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Vec3 {
     data: [f32; 3]
@@ -7,6 +9,12 @@ impl Vec3 {
     pub fn new_with_zeros() -> Self {
         Self {
             data: [0.0; 3]
+        }
+    }
+
+    pub fn new(x: f32, y: f32, z: f32) -> Self {
+        Self {
+            data: [x, y, z]
         }
     }
 }
@@ -28,7 +36,7 @@ impl Vec4 {
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Mat4 {
-    data: [[f32; 4]; 4]
+    pub data: [[f32; 4]; 4]
 }
 
 impl Mat4 {
@@ -80,7 +88,15 @@ impl Mat4 {
         mat.data[1][1] = scale.data[1];
         mat.data[2][2] = scale.data[2];
         mat
-    } 
+    }
+
+    pub fn translate_mat(translate: Vec3) -> Self {
+        let mut mat = Mat4::new_identity();
+        mat.data[0][3] = translate.data[0];
+        mat.data[1][3] = translate.data[1];
+        mat.data[2][3] = translate.data[2];
+        mat
+    }  
 
     pub fn print(&self) {
         for row in  0..4 {
