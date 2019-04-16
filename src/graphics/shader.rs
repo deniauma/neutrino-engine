@@ -17,9 +17,11 @@ impl MaterialBuilder {
         out vec3 ourColor;
         out vec2 TexCoord;
 
+        uniform mat4 transform;
+
         void main()
         {
-            gl_Position = vec4(aPos, 1.0);
+            gl_Position = transform * vec4(aPos, 1.0);
             ourColor = aColor;
             TexCoord = vec2(aTexCoord.x, aTexCoord.y);
         }
@@ -56,9 +58,11 @@ impl MaterialBuilder {
         out vec3 ourColor;
         out vec2 TexCoord;
 
+        uniform mat4 transform;
+
         void main()
         {
-            gl_Position = vec4(aPos, 1.0);
+            gl_Position = transform * vec4(aPos, 1.0);
             ourColor = aColor;
             TexCoord = vec2(aTexCoord.x, aTexCoord.y);
         }
@@ -87,7 +91,7 @@ impl MaterialBuilder {
 
 #[derive(Copy, Clone)]
 pub struct Material {
-    shader: Shader,
+    pub shader: Shader,
     texture: Texture,
 }
 
@@ -207,9 +211,11 @@ impl Shader {
     }
 
     pub fn set_mat4(&self, name: &str, mat: Mat4) {
-        let mat_ptr = &mat.data[0][0] as *const f32;
+        let mat_ptr = mat.data.as_ptr() as *const f32;
+        let mat_name = CString::new(name).unwrap();
         unsafe {
-            gl::UniformMatrix4fv(gl::GetUniformLocation(self.id, CString::new(name).unwrap().as_ptr()), 1, gl::FALSE, mat_ptr);
+            //print!("Unfiform loc: {}", gl::GetUniformLocation(self.id, mat_name.as_ptr()));
+            gl::UniformMatrix4fv(gl::GetUniformLocation(self.id, mat_name.as_ptr()), 1, gl::TRUE, mat_ptr);
         }
     }
 }

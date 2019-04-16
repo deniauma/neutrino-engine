@@ -10,6 +10,7 @@ use std::time::{Duration, Instant};
 pub mod mesh;
 pub mod shader;
 use crate::graphics::shader::*;
+use math::*;
 
 type Index = u32;
 
@@ -129,6 +130,13 @@ impl RenderSystem {
             }
             unsafe { gl::Clear(gl::COLOR_BUFFER_BIT) };
             material.bind();
+            let mut trans = Mat4::new_identity();
+            //trans = transforms::translate(trans, Vec3::new(1.0, 0.0, 0.0));
+            //trans = transforms::scale(trans, Vec3::new(1.0, 2.0, 0.0));
+            let angle: f32 = -45.0;
+            trans = transforms::rotate(trans, Vec3::new(0.0, 0.0, 1.0), angle.to_radians());
+            //println!("Trans: {:?}", trans);
+            material.shader.set_mat4("transform", trans);
             unsafe {
                 gl::BindVertexArray(gl_object.vao);
                 gl::DrawElements(
@@ -297,6 +305,10 @@ impl Engine {
 
     pub fn get_shader(&self, id: Index) -> &shader::Shader {
         self.storage.get_shader(id).unwrap()
+    }
+
+    pub fn get_material(&self, id: Index) -> &shader::Material {
+        self.storage.get_material(id).unwrap()
     }
 }
 

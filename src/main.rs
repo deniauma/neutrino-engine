@@ -1,7 +1,8 @@
 pub mod graphics;
 use crate::graphics::mesh::*;
 use crate::graphics::shader::*;
-use math::Mat4;
+extern crate math;
+use math::*;
 
 fn main() {
     let mut engine = graphics::Engine::new();

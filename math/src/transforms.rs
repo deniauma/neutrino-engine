@@ -21,10 +21,10 @@ pub fn get_rotate_mat(axis: Vec3, angle: f32) -> Mat4 {
         get_rotate_x_mat(angle)
     }
     else if axis.data[1] == 1.0 {
-        get_rotate_x_mat(angle)
+        get_rotate_y_mat(angle)
     }
     else if axis.data[2] == 1.0 {
-        get_rotate_x_mat(angle)
+        get_rotate_z_mat(angle)
     }
     else {
         rot_mat
@@ -56,4 +56,18 @@ pub fn get_rotate_z_mat(angle: f32) -> Mat4 {
     rot_mat.data[1][0] = angle.sin();
     rot_mat.data[1][1] = angle.cos();
     return rot_mat;
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_translate_mat() {
+        let mut mat = Mat4::new_identity();
+        mat = transforms::translate(mat, Vec3::new(1.0, 1.0, 0.0));
+        let vec1 = Vec3::new(2.0, 2.0, 0.0);
+
+    }
 }
