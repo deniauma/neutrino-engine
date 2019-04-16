@@ -12,11 +12,14 @@ pub mod shader;
 use crate::graphics::shader::*;
 use math::*;
 
-type Index = u32;
+pub type Index = u32;
 
+pub trait SceneUpdate {
+    fn update(&self);
+}
 
 pub struct SimpleState {
-    update: fn(),
+    pub update: Fn(),
 }
 
 #[derive(PartialEq, Eq, Hash)]
@@ -123,6 +126,7 @@ impl RenderSystem {
     fn render(&mut self, storage: &ComponentStorageManager) {
         for (id, mesh) in storage.mesh_manager.iter() {
             let material = storage.get_material(*id).unwrap();
+            let update = storage.get_update(*id).unwrap();
             let gl_object: RenderObject;
             match self.objects_to_render.get(&id) {
                 None => gl_object = self.create_object_to_render(*id, mesh),
@@ -130,13 +134,7 @@ impl RenderSystem {
             }
             unsafe { gl::Clear(gl::COLOR_BUFFER_BIT) };
             material.bind();
-            let mut trans = Mat4::new_identity();
-            //trans = transforms::translate(trans, Vec3::new(1.0, 0.0, 0.0));
-            //trans = transforms::scale(trans, Vec3::new(1.0, 2.0, 0.0));
-            let angle: f32 = -45.0;
-            trans = transforms::rotate(trans, Vec3::new(0.0, 0.0, 1.0), angle.to_radians());
-            //println!("Trans: {:?}", trans);
-            material.shader.set_mat4("transform", trans);
+            update.update();
             unsafe {
                 gl::BindVertexArray(gl_object.vao);
                 gl::DrawElements(
@@ -160,8 +158,9 @@ impl SceneObject {}
 struct ComponentStorageManager {
     mesh_manager: HashMap<Index, mesh::Mesh>,
     shader_manager: HashMap<Index, shader::Shader>,
-    state_manager: HashMap<Index, SimpleState>,
+    //state_manager: HashMap<Index, SimpleState>,
     material_manager: HashMap<Index, Material>,
+    update_manager: HashMap<Index, Box<SceneUpdate>>,
 }
 
 impl ComponentStorageManager {
@@ -169,8 +168,9 @@ impl ComponentStorageManager {
         ComponentStorageManager {
             mesh_manager: HashMap::new(),
             shader_manager: HashMap::new(),
-            state_manager: HashMap::new(),
+            //state_manager: HashMap::new(),
             material_manager: HashMap::new(),
+            update_manager: HashMap::new(),
         }
     }
 
@@ -188,17 +188,24 @@ impl ComponentStorageManager {
         }
     }
 
-    fn get_state(&self, id: Index) -> Result<&SimpleState, String> {
+    /*fn get_state(&self, id: Index) -> Result<&SimpleState, String> {
         match self.state_manager.get(&id) {
             None => Err("State doesn't exist!".to_string()),
             Some(state) => Ok(state),
         }
-    }
+    }*/
 
     fn get_material(&self, id: Index) -> Result<&Material, String> {
         match self.material_manager.get(&id) {
             None => Err("Material doesn't exist!".to_string()),
             Some(material) => Ok(material),
+        }
+    }
+
+    fn get_update(&self, id: Index) -> Result<&Box<SceneUpdate>, String> {
+        match self.update_manager.get(&id) {
+            None => Err("Update doesn't exist!".to_string()),
+            Some(update) => Ok(update),
         }
     }
 }
@@ -291,12 +298,16 @@ impl Engine {
         self.storage.shader_manager.insert(id, shader);
     }
 
-    pub fn add_state(&mut self, id: Index, state: SimpleState) {
+    /*pub fn add_state(&mut self, id: Index, state: SimpleState) {
         self.storage.state_manager.insert(id, state);
-    }
+    }*/
 
     pub fn add_material(&mut self, id: Index, material: Material) {
         self.storage.material_manager.insert(id, material);
+    }
+
+    pub fn add_update(&mut self, id: Index, update: Box<SceneUpdate>) {
+        self.storage.update_manager.insert(id, update);
     }
 
     pub fn get_mesh(&self, id: Index) -> &mesh::Mesh {
@@ -309,6 +320,10 @@ impl Engine {
 
     pub fn get_material(&self, id: Index) -> &shader::Material {
         self.storage.get_material(id).unwrap()
+    }
+
+    pub fn get_update(&self, id: Index) -> &Box<SceneUpdate> {
+        self.storage.get_update(id).unwrap()
     }
 }
 
