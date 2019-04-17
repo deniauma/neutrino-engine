@@ -6,7 +6,7 @@ pub struct Transform {
     pub translation: Vec3,
     pub rotation: Vec3,
     pub scale: Vec3,
-    local_transform: Mat4,
+    pub local_transform: Mat4,
 }
 
 impl Transform {

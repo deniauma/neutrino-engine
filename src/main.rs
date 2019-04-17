@@ -1,6 +1,7 @@
 pub mod graphics;
 use crate::graphics::mesh::*;
 use crate::graphics::shader::*;
+use crate::graphics::transform::*;
 use math::*;
 
 fn main() {
@@ -45,6 +46,7 @@ fn main() {
         rectangle.id,
         MaterialBuilder::simple_texture_material_2d("container.jpg"),
     );
+    engine.add_transform(rectangle.id, Transform::new_with_zeros());
 
     struct Actor {
         id: graphics::Index,

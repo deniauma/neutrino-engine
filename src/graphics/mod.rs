@@ -130,6 +130,7 @@ impl RenderSystem {
         for (id, mesh) in storage.mesh_manager.iter() {
             let material = storage.get_material(*id).unwrap();
             let update = storage.get_update(*id).unwrap();
+            let transform = storage.get_transform(*id).unwrap();
             let gl_object: RenderObject;
             match self.objects_to_render.get(&id) {
                 None => gl_object = self.create_object_to_render(*id, mesh),
@@ -137,7 +138,8 @@ impl RenderSystem {
             }
             unsafe { gl::Clear(gl::COLOR_BUFFER_BIT) };
             material.bind();
-            update.update();
+            material.shader.set_mat4("transform", transform.local_transform);
+            //update.update();
             unsafe {
                 gl::BindVertexArray(gl_object.vao);
                 gl::DrawElements(
