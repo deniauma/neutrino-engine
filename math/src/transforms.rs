@@ -66,7 +66,7 @@ mod tests {
     #[test]
     fn test_translate_mat() {
         let mut mat = Mat4::new_identity();
-        mat = transforms::translate(mat, Vec3::new(1.0, 1.0, 0.0));
+        mat = translate(mat, Vec3::new(1.0, 1.0, 0.0));
         let vec1 = Vec3::new(2.0, 2.0, 0.0);
 
     }

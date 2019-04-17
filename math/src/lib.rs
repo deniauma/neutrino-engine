@@ -1,4 +1,6 @@
 pub mod transforms;
+use std::ops::Mul;
+
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Vec3 {
@@ -17,6 +19,30 @@ impl Vec3 {
             data: [x, y, z]
         }
     }
+
+    pub fn x(&self) -> f32 {
+        self.data[0]
+    }
+
+    pub fn y(&self) -> f32 {
+        self.data[1]
+    }
+
+    pub fn z(&self) -> f32 {
+        self.data[2]
+    }
+
+    pub fn set_x(&mut self, x: f32) {
+        self.data[0] = x;
+    }
+
+    pub fn set_y(&mut self, y: f32) {
+        self.data[0] = y;
+    }
+
+    pub fn set_z(&mut self, z: f32) {
+        self.data[0] = z;
+    }
 }
 
 
@@ -29,6 +55,12 @@ impl Vec4 {
     pub fn new_with_zeros() -> Self {
         Self {
             data: [0.0; 4]
+        }
+    }
+
+    pub fn from_vec3(vec: Vec3, w: f32) -> Self {
+        Self {
+            data: [vec.x(), vec.y(), vec.z(), w]
         }
     }
 }
@@ -109,6 +141,23 @@ impl Mat4 {
     }
 }
 
+impl Mul<Mat4> for Mat4 {
+    type Output = Mat4;
+
+    fn mul(self, other: Mat4) -> Mat4 {
+        self.multiply_by(other)
+    }
+}
+
+impl Mul<Vec4> for Mat4 {
+    type Output = Vec4;
+
+    fn mul(self, other: Vec4) -> Vec4 {
+        self.multiply_by_vec(other)
+    }
+}
+
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -137,10 +186,26 @@ mod tests {
     }
 
     #[test]
+    fn mat4_mul_opt() {
+        let mat1 = Mat4::new_with_zeros();
+        let mat2 = Mat4::new_identity();
+        let mat3 = mat1 * mat2;
+        assert_eq!(mat1, mat3);
+    }
+
+    #[test]
     fn mat4_multiply_by_vec4() {
         let mat = Mat4::new_identity();
         let vec1 = Vec4{ data: [2.0; 4] };
         let vec2 = mat.multiply_by_vec(vec1);
+        assert_eq!(vec1, vec2);
+    }
+
+    #[test]
+    fn mat4_mul_by_vec4_opt() {
+        let mat = Mat4::new_identity();
+        let vec1 = Vec4{ data: [2.0; 4] };
+        let vec2 = mat * vec1;
         assert_eq!(vec1, vec2);
     }
 

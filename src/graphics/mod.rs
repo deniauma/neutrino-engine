@@ -9,8 +9,11 @@ use std::time::{Duration, Instant};
 
 pub mod mesh;
 pub mod shader;
-use crate::graphics::shader::*;
-use math::*;
+pub mod transform;
+use self::transform::*;
+use self::mesh::*;
+use self::shader::*;
+
 
 pub type Index = u32;
 
@@ -61,7 +64,7 @@ impl RenderSystem {
     fn create_object_to_render(
         &mut self,
         id: Index,
-        mesh: &mesh::Mesh,
+        mesh: &Mesh,
     ) -> RenderObject {
         println!("Creating new object to render ...");
         let mut gl_object = RenderObject::new();
@@ -88,7 +91,7 @@ impl RenderSystem {
             gl::EnableVertexAttribArray(0); // this is "layout (location = 0)" in vertex shader
             gl::VertexAttribPointer(
                 0,         // index of the generic vertex attribute ("layout (location = 0)")
-                mesh::Mesh::nb_elements_per_vertex(),         // the number of components per generic vertex attribute
+                Mesh::nb_elements_per_vertex(),         // the number of components per generic vertex attribute
                 gl::FLOAT, // data type
                 gl::FALSE, // normalized (int-to-float conversion)
                 (mesh.size_of_stride()) as gl::types::GLint, // stride (byte offset between consecutive attributes)
@@ -98,7 +101,7 @@ impl RenderSystem {
             gl::EnableVertexAttribArray(1); // this is "layout (location = 1)" in vertex shader
             gl::VertexAttribPointer(
                 1,         // index of the generic vertex attribute ("layout (location = 1)")
-                mesh::Mesh::nb_elements_per_color(),         // the number of components per generic vertex attribute
+                Mesh::nb_elements_per_color(),         // the number of components per generic vertex attribute
                 gl::FLOAT, // data type
                 gl::FALSE, // normalized (int-to-float conversion)
                 (mesh.size_of_stride()) as gl::types::GLint, // stride (byte offset between consecutive attributes)
@@ -108,7 +111,7 @@ impl RenderSystem {
             gl::EnableVertexAttribArray(2); // this is "layout (location = 2)" in vertex shader
             gl::VertexAttribPointer(
                 2,         // index of the generic vertex attribute ("layout (location =2)")
-                mesh::Mesh::nb_elements_per_uv(),         // the number of components per generic vertex attribute
+                Mesh::nb_elements_per_uv(),         // the number of components per generic vertex attribute
                 gl::FLOAT, // data type
                 gl::FALSE, // normalized (int-to-float conversion)
                 (mesh.size_of_stride()) as gl::types::GLint, // stride (byte offset between consecutive attributes)
@@ -156,8 +159,9 @@ pub struct SceneObject {
 impl SceneObject {}
 
 struct ComponentStorageManager {
-    mesh_manager: HashMap<Index, mesh::Mesh>,
-    shader_manager: HashMap<Index, shader::Shader>,
+    mesh_manager: HashMap<Index, Mesh>,
+    shader_manager: HashMap<Index, Shader>,
+    transform_manager: HashMap<Index, Transform>,
     //state_manager: HashMap<Index, SimpleState>,
     material_manager: HashMap<Index, Material>,
     update_manager: HashMap<Index, Box<SceneUpdate>>,
@@ -168,23 +172,31 @@ impl ComponentStorageManager {
         ComponentStorageManager {
             mesh_manager: HashMap::new(),
             shader_manager: HashMap::new(),
+            transform_manager: HashMap::new(),
             //state_manager: HashMap::new(),
             material_manager: HashMap::new(),
             update_manager: HashMap::new(),
         }
     }
 
-    fn get_mesh(&self, id: Index) -> Result<&mesh::Mesh, String> {
+    fn get_mesh(&self, id: Index) -> Result<&Mesh, String> {
         match self.mesh_manager.get(&id) {
             None => Err("Mesh doesn't exist!".to_string()),
             Some(mesh) => Ok(mesh),
         }
     }
 
-    pub fn get_shader(&self, id: Index) -> Result<&shader::Shader, String> {
+    pub fn get_shader(&self, id: Index) -> Result<&Shader, String> {
         match self.shader_manager.get(&id) {
             None => Err("Shader doesn't exist!".to_string()),
             Some(shader) => Ok(shader),
+        }
+    }
+
+    pub fn get_transform(&self, id: Index) -> Result<&Transform, String> {
+        match self.transform_manager.get(&id) {
+            None => Err("Transform doesn't exist!".to_string()),
+            Some(transform) => Ok(transform),
         }
     }
 
@@ -284,18 +296,22 @@ impl Engine {
     }
 
     pub fn create_and_add_mesh(&mut self, id: Index) {
-        let mesh = mesh::Mesh::new_empty();
+        let mesh = Mesh::new_empty();
         self.storage.mesh_manager.insert(id, mesh);
     }
 
-    pub fn add_mesh(&mut self, id: Index, mesh: mesh::Mesh) {
+    pub fn add_mesh(&mut self, id: Index, mesh: Mesh) {
         println!("Mesh manager before update: {} objects", self.storage.mesh_manager.len());
         self.storage.mesh_manager.insert(id, mesh);
         println!("Mesh manager updated: {} objects", self.storage.mesh_manager.len());
     }
 
-    pub fn add_shader(&mut self, id: Index, shader: shader::Shader) {
+    pub fn add_shader(&mut self, id: Index, shader: Shader) {
         self.storage.shader_manager.insert(id, shader);
+    }
+
+    pub fn add_transform(&mut self, id: Index, transform: Transform) {
+        self.storage.transform_manager.insert(id, transform);
     }
 
     /*pub fn add_state(&mut self, id: Index, state: SimpleState) {
@@ -310,15 +326,19 @@ impl Engine {
         self.storage.update_manager.insert(id, update);
     }
 
-    pub fn get_mesh(&self, id: Index) -> &mesh::Mesh {
+    pub fn get_mesh(&self, id: Index) -> &Mesh {
         self.storage.get_mesh(id).unwrap()
     }
 
-    pub fn get_shader(&self, id: Index) -> &shader::Shader {
+    pub fn get_shader(&self, id: Index) -> &Shader {
         self.storage.get_shader(id).unwrap()
     }
 
-    pub fn get_material(&self, id: Index) -> &shader::Material {
+    pub fn get_transform(&self, id: Index) -> &Transform {
+        self.storage.get_transform(id).unwrap()
+    }
+
+    pub fn get_material(&self, id: Index) -> &Material {
         self.storage.get_material(id).unwrap()
     }
 
