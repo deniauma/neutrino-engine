@@ -19,18 +19,26 @@ impl Transform {
         }
     }
 
-    pub fn new_with_zeros() -> Self {
+    pub fn new_default() -> Self {
         Self {
             translation: Vec3::new_with_zeros(),
             rotation: Vec3::new_with_zeros(),
-            scale: Vec3::new_with_zeros(),
+            scale: Vec3::new(1.0, 1.0, 1.0),
             local_transform: Mat4::new_identity(),
         }
+    }
+
+    pub fn calculate_local_transform(&self) -> Mat4 {
+        let translation_mat = transforms::translate(Mat4::new_identity(), self.translation);
+        let scale_mat = transforms::scale(Mat4::new_identity(), self.scale);
+        let rotate_mat = self.calculate_rotation_mat();
+        translation_mat * rotate_mat * scale_mat
     }
 
     pub fn update_local_transform(&mut self) {
         let translation_mat = transforms::translate(Mat4::new_identity(), self.translation);
         let scale_mat = transforms::scale(Mat4::new_identity(), self.scale);
+        println!("Scale mat: {:?}: ", scale_mat.print());
         let rotate_mat = self.calculate_rotation_mat();
         self.local_transform = translation_mat * rotate_mat * scale_mat;
     }

@@ -2,6 +2,7 @@ pub mod graphics;
 use crate::graphics::mesh::*;
 use crate::graphics::shader::*;
 use crate::graphics::transform::*;
+use crate::graphics::states::*;
 use math::*;
 
 fn main() {
@@ -46,37 +47,31 @@ fn main() {
         rectangle.id,
         MaterialBuilder::simple_texture_material_2d("container.jpg"),
     );
-    engine.add_transform(rectangle.id, Transform::new_with_zeros());
+    engine.add_transform(rectangle.id, Transform::new_default());
 
-    struct Actor {
-        id: graphics::Index,
-        shader: Shader
+    struct GameEntity {
+        id: graphics::Index
     }
 
-    impl Actor {
-        pub fn new(id: u32, shader: Shader) -> Self {
-            Self {
-                id: id,
-                shader: shader,
-            }
+    impl EntityState for GameEntity {
+        fn on_create(&mut self, data: &mut graphics::ComponentStorageManager){
+
+        }
+
+        fn on_update(&mut self, data: &mut graphics::ComponentStorageManager){
+            let trans = data.get_mut_transform(self.id).unwrap();
+            //trans.rotation.set_z(45.0);
+            trans.translation.set_x(1.0);
+            trans.scale.set_x(0.5);
+            trans.scale.set_y(0.5);
+        }
+
+        fn on_delete(&mut self, data: &mut graphics::ComponentStorageManager){
+
         }
     }
 
-    impl graphics::SceneUpdate for Actor {
-        fn update(&self) {
-            let entity = self.id;
-            let mut trans = Mat4::new_identity();
-            //trans = transforms::translate(trans, Vec3::new(1.0, 0.0, 0.0));
-            //trans = transforms::scale(trans, Vec3::new(1.0, 2.0, 0.0));
-            let angle: f32 = -45.0;
-            trans = transforms::rotate(trans, Vec3::new(0.0, 0.0, 1.0), angle.to_radians());
-            //println!("Trans: {:?}", trans);
-            self.shader.set_mat4("transform", trans);
-        }
-    }
-
-    let actor = Actor::new(rectangle.id, engine.get_material(rectangle.id).shader);
-    engine.add_update(rectangle.id, Box::new(actor));
+    engine.add_states(rectangle.id, GameEntity{id: rectangle.id});
 
     engine.start();
 }

@@ -37,11 +37,11 @@ impl Vec3 {
     }
 
     pub fn set_y(&mut self, y: f32) {
-        self.data[0] = y;
+        self.data[1] = y;
     }
 
     pub fn set_z(&mut self, z: f32) {
-        self.data[0] = z;
+        self.data[2] = z;
     }
 }
 

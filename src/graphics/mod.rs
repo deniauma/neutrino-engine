@@ -10,16 +10,17 @@ use std::time::{Duration, Instant};
 pub mod mesh;
 pub mod shader;
 pub mod transform;
+pub mod scene;
+pub mod states;
+
 use self::transform::*;
 use self::mesh::*;
 use self::shader::*;
+use self::scene::*;
+use self::states::*;
 
 
 pub type Index = u32;
-
-pub trait SceneUpdate {
-    fn update(&self);
-}
 
 pub struct SimpleState {
     pub update: Fn(),
@@ -126,10 +127,14 @@ impl RenderSystem {
         return gl_object;
     }
 
-    fn render(&mut self, storage: &ComponentStorageManager) {
+
+    fn render(&mut self, storage: &mut ComponentStorageManager) {
+        for (_, trans) in storage.transform_manager.iter_mut() {
+            trans.update_local_transform();
+        }
+
         for (id, mesh) in storage.mesh_manager.iter() {
             let material = storage.get_material(*id).unwrap();
-            let update = storage.get_update(*id).unwrap();
             let transform = storage.get_transform(*id).unwrap();
             let gl_object: RenderObject;
             match self.objects_to_render.get(&id) {
@@ -138,8 +143,8 @@ impl RenderSystem {
             }
             unsafe { gl::Clear(gl::COLOR_BUFFER_BIT) };
             material.bind();
+            println!("Local transform : {:?}", transform.local_transform.print());
             material.shader.set_mat4("transform", transform.local_transform);
-            //update.update();
             unsafe {
                 gl::BindVertexArray(gl_object.vao);
                 gl::DrawElements(
@@ -160,11 +165,10 @@ pub struct SceneObject {
 
 impl SceneObject {}
 
-struct ComponentStorageManager {
+pub struct ComponentStorageManager {
     mesh_manager: HashMap<Index, Mesh>,
     shader_manager: HashMap<Index, Shader>,
     transform_manager: HashMap<Index, Transform>,
-    //state_manager: HashMap<Index, SimpleState>,
     material_manager: HashMap<Index, Material>,
     update_manager: HashMap<Index, Box<SceneUpdate>>,
 }
@@ -175,7 +179,6 @@ impl ComponentStorageManager {
             mesh_manager: HashMap::new(),
             shader_manager: HashMap::new(),
             transform_manager: HashMap::new(),
-            //state_manager: HashMap::new(),
             material_manager: HashMap::new(),
             update_manager: HashMap::new(),
         }
@@ -202,12 +205,12 @@ impl ComponentStorageManager {
         }
     }
 
-    /*fn get_state(&self, id: Index) -> Result<&SimpleState, String> {
-        match self.state_manager.get(&id) {
-            None => Err("State doesn't exist!".to_string()),
-            Some(state) => Ok(state),
+    pub fn get_mut_transform(&mut self, id: Index) -> Result<&mut Transform, String> {
+        match self.transform_manager.get_mut(&id) {
+            None => Err("Transform doesn't exist!".to_string()),
+            Some(transform) => Ok(transform),
         }
-    }*/
+    }
 
     fn get_material(&self, id: Index) -> Result<&Material, String> {
         match self.material_manager.get(&id) {
@@ -228,6 +231,7 @@ pub struct Engine {
     window: Window,
     storage: ComponentStorageManager,
     render_system: RenderSystem,
+    states_system: StateSystem,
     entity_count: Index,
 }
 
@@ -237,6 +241,7 @@ impl Engine {
             window: Window::new(),
             storage: ComponentStorageManager::new(),
             render_system: RenderSystem::new(),
+            states_system: StateSystem::new(),
             entity_count: 0,
         }
     }
@@ -276,7 +281,8 @@ impl Engine {
                 _ => (),
             });
 
-            self.render_system.render(&self.storage);
+            self.states_system.run_update_state(&mut self.storage);
+            self.render_system.render(&mut self.storage);
 
             window.swap_buffers().unwrap();
         }
@@ -316,9 +322,12 @@ impl Engine {
         self.storage.transform_manager.insert(id, transform);
     }
 
-    /*pub fn add_state(&mut self, id: Index, state: SimpleState) {
-        self.storage.state_manager.insert(id, state);
-    }*/
+    pub fn add_states<T: EntityState>(&mut self, id: Index, states: T)
+    where
+        T: 'static,
+    {
+        self.states_system.set_entity_states(id, states);
+    }
 
     pub fn add_material(&mut self, id: Index, material: Material) {
         self.storage.material_manager.insert(id, material);
