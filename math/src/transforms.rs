@@ -1,5 +1,6 @@
 use crate::{Vec3, Mat4};
 
+
 pub fn scale(mat: Mat4, scaling: Vec3) -> Mat4 {
     let scale_mat = Mat4::scaling_mat(scaling);
     scale_mat.multiply_by(mat)
