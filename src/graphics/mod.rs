@@ -13,7 +13,7 @@ pub mod transform;
 pub mod scene;
 pub mod states;
 
-use self::transform::*;
+use self::transform::Transform;
 use self::mesh::*;
 use self::shader::*;
 use self::scene::*;
@@ -143,7 +143,7 @@ impl RenderSystem {
             }
             unsafe { gl::Clear(gl::COLOR_BUFFER_BIT) };
             material.bind();
-            println!("Local transform : {:?}", transform.local_transform.print());
+            println!("Local transform : {:?}", transform.local_transform);
             material.shader.set_mat4("transform", transform.local_transform);
             unsafe {
                 gl::BindVertexArray(gl_object.vao);

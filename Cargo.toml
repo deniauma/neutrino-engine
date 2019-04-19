@@ -9,3 +9,4 @@ glutin = "0.19.0"
 gl = "*"
 image = "*"
 math = { path = "math"}
+cgmath = "0.17.0"

@@ -1,54 +1,51 @@
-use math::*;
+extern crate cgmath;
+use cgmath::prelude::*;
+use cgmath::{Vector3, Matrix4, Quaternion, Euler, Deg};
+
 
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Transform {
-    pub translation: Vec3,
-    pub rotation: Vec3,
-    pub scale: Vec3,
-    pub local_transform: Mat4,
+    pub translation: Vector3<f32>,
+    pub rotation: Vector3<f32>,
+    pub scale: Vector3<f32>,
+    pub local_transform: Matrix4<f32>,
 }
 
 impl Transform {
-    pub fn new(trans: Vec3, rotation: Vec3, scale: Vec3) -> Self {
+    pub fn new(trans: Vector3<f32>, rotation: Vector3<f32>, scale: Vector3<f32>) -> Self {
         Self {
             translation: trans,
             rotation: rotation,
             scale: scale,
-            local_transform: Mat4::new_identity(),
+            local_transform: Matrix4::one(),
         }
     }
 
     pub fn new_default() -> Self {
         Self {
-            translation: Vec3::new_with_zeros(),
-            rotation: Vec3::new_with_zeros(),
-            scale: Vec3::new(1.0, 1.0, 1.0),
-            local_transform: Mat4::new_identity(),
+            translation: Vector3::new(0.0, 0.0, 0.0),
+            rotation: Vector3::new(0.0, 0.0, 0.0),
+            scale: Vector3::new(1.0, 1.0, 1.0),
+            local_transform: Matrix4::one(),
         }
     }
 
-    pub fn calculate_local_transform(&self) -> Mat4 {
-        let translation_mat = transforms::translate(Mat4::new_identity(), self.translation);
-        let scale_mat = transforms::scale(Mat4::new_identity(), self.scale);
-        let rotate_mat = self.calculate_rotation_mat();
+    pub fn calculate_local_transform(&self) -> Matrix4<f32> {
+        let translation_mat = Matrix4::from_translation(self.translation); //transforms::translate(Mat4::new_identity(), self.translation);
+        let scale_mat = Matrix4::from_nonuniform_scale(self.scale.x, self.scale.y, self.scale.z);//transforms::scale(Mat4::new_identity(), self.scale);
+        let rotate_mat = Matrix4::from(Quaternion::from(Euler::new(Deg(self.rotation.x), Deg(self.rotation.y), Deg(self.rotation.z))));//self.calculate_rotation_mat();
         translation_mat * rotate_mat * scale_mat
     }
 
     pub fn update_local_transform(&mut self) {
-        let translation_mat = transforms::translate(Mat4::new_identity(), self.translation);
-        let scale_mat = transforms::scale(Mat4::new_identity(), self.scale);
-        println!("Scale mat: {:?}: ", scale_mat.print());
-        let rotate_mat = self.calculate_rotation_mat();
+        let translation_mat = Matrix4::from_translation(self.translation); //transforms::translate(Mat4::new_identity(), self.translation);
+        let scale_mat = Matrix4::from_nonuniform_scale(self.scale.x, self.scale.y, self.scale.z);//transforms::scale(Mat4::new_identity(), self.scale);
+        let rotate_mat = Matrix4::from(Quaternion::from(Euler::new(Deg(self.rotation.x), Deg(self.rotation.y), Deg(self.rotation.z))));//self.calculate_rotation_mat();
+        println!("Scale mat: {:?}: ", scale_mat);
         self.local_transform = translation_mat * rotate_mat * scale_mat;
     }
 
-    fn calculate_rotation_mat(&self) -> Mat4 {
-        let rotate_x_mat = transforms::get_rotate_x_mat(self.rotation.x().to_radians());
-        let rotate_y_mat = transforms::get_rotate_y_mat(self.rotation.y().to_radians());
-        let rotate_z_mat = transforms::get_rotate_z_mat(self.rotation.z().to_radians());
-        rotate_x_mat * rotate_z_mat * rotate_y_mat
-    }
 }
 
 pub struct Translation {

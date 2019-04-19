@@ -2,7 +2,8 @@ extern crate image;
 
 use image::GenericImageView;
 use std::ffi::CString;
-use math::Mat4;
+use cgmath::{Matrix4};
+use cgmath::prelude::*;
 
 pub struct MaterialBuilder {}
 
@@ -210,12 +211,12 @@ impl Shader {
         unsafe { gl::UseProgram(self.id) };
     }
 
-    pub fn set_mat4(&self, name: &str, mat: Mat4) {
-        let mat_ptr = mat.data.as_ptr() as *const f32;
+    pub fn set_mat4(&self, name: &str, mat: Matrix4<f32>) {
+        let mat_ptr = mat.as_ptr(); //mat.data.as_ptr() as *const f32;
         let mat_name = CString::new(name).unwrap();
         unsafe {
             //print!("Unfiform loc: {}", gl::GetUniformLocation(self.id, mat_name.as_ptr()));
-            gl::UniformMatrix4fv(gl::GetUniformLocation(self.id, mat_name.as_ptr()), 1, gl::TRUE, mat_ptr);
+            gl::UniformMatrix4fv(gl::GetUniformLocation(self.id, mat_name.as_ptr()), 1, gl::FALSE, mat_ptr);
         }
     }
 }
