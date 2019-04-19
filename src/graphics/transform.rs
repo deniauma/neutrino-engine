@@ -47,7 +47,7 @@ impl Transform {
         let rotate_x_mat = transforms::get_rotate_x_mat(self.rotation.x().to_radians());
         let rotate_y_mat = transforms::get_rotate_y_mat(self.rotation.y().to_radians());
         let rotate_z_mat = transforms::get_rotate_z_mat(self.rotation.z().to_radians());
-        rotate_z_mat * rotate_y_mat * rotate_x_mat
+        rotate_x_mat * rotate_z_mat * rotate_y_mat
     }
 }
 

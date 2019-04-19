@@ -60,10 +60,11 @@ fn main() {
 
         fn on_update(&mut self, data: &mut graphics::ComponentStorageManager){
             let trans = data.get_mut_transform(self.id).unwrap();
-            //trans.rotation.set_z(45.0);
-            trans.translation.set_x(1.0);
-            trans.scale.set_x(0.5);
-            trans.scale.set_y(0.5);
+            trans.rotation.set_z(45.0);
+            trans.rotation.set_x(45.0);
+            //trans.translation.set_x(1.0);
+            //trans.scale.set_x(0.5);
+            //trans.scale.set_y(0.5);
         }
 
         fn on_delete(&mut self, data: &mut graphics::ComponentStorageManager){

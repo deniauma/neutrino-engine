@@ -1,4 +1,5 @@
 pub mod transforms;
+pub mod quat;
 use std::ops::Mul;
 
 
