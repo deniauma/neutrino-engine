@@ -1,6 +1,6 @@
 extern crate cgmath;
-use cgmath::prelude::*;
-use cgmath::{Vector3, Matrix4, Quaternion, Euler, Deg};
+pub use cgmath::prelude::*;
+pub use cgmath::{Vector3, Matrix4, Quaternion, Euler, Deg};
 
 
 
@@ -42,7 +42,6 @@ impl Transform {
         let translation_mat = Matrix4::from_translation(self.translation); //transforms::translate(Mat4::new_identity(), self.translation);
         let scale_mat = Matrix4::from_nonuniform_scale(self.scale.x, self.scale.y, self.scale.z);//transforms::scale(Mat4::new_identity(), self.scale);
         let rotate_mat = Matrix4::from(Quaternion::from(Euler::new(Deg(self.rotation.x), Deg(self.rotation.y), Deg(self.rotation.z))));//self.calculate_rotation_mat();
-        println!("Scale mat: {:?}: ", scale_mat);
         self.local_transform = translation_mat * rotate_mat * scale_mat;
     }
 

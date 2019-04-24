@@ -142,9 +142,17 @@ impl RenderSystem {
                 Some(object) => gl_object = *object,
             }
             unsafe { gl::Clear(gl::COLOR_BUFFER_BIT) };
+            
+            //Compute MVP matrix
+            let view_mat = cgmath::Matrix4::from_translation(cgmath::Vector3::new(0.0, 0.0, -3.0));
+            let projection_mat: cgmath::Matrix4<f32> = cgmath::perspective(cgmath::Deg(45.0), 1024.0/768.0, 0.1, 100.0);
+            let model_mat = transform.local_transform;
+
             material.bind();
-            println!("Local transform : {:?}", transform.local_transform);
-            material.shader.set_mat4("transform", transform.local_transform);
+            material.shader.set_mat4("model", model_mat);
+            material.shader.set_mat4("view", view_mat);
+            material.shader.set_mat4("projection", projection_mat);
+
             unsafe {
                 gl::BindVertexArray(gl_object.vao);
                 gl::DrawElements(
