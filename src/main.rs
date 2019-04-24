@@ -39,11 +39,12 @@ fn main() {
 
         }
 
-        fn on_update(&mut self, data: &mut graphics::ComponentStorageManager){
+        fn on_update(&mut self, data: &mut graphics::ComponentStorageManager, delta: f32){
             let trans = data.get_mut_transform(self.id).unwrap();
-            //trans.rotation.z = 45.0;
+            trans.rotation.y +=  delta*20.0;
+            trans.rotation.x +=  delta*20.0;
             //trans.rotation.set_x(45.0);
-            trans.translation.x = 2.0;
+            trans.translation.x = 1.5;
             trans.scale.x = 1.0;
             trans.scale.y = 1.0;
         }
@@ -53,13 +54,13 @@ fn main() {
         }
     }
 
-    engine.add_states(rectangle.id, GameEntity{id: rectangle.id});
-
     //using EntityBuilder
     let mut entity_builder = EntityBuilder::new();
     //entity_builder.with_quad_mesh(1.0);
     entity_builder.with_cube_mesh(1.0).with_texture("container.jpg");
     entity_builder.build(&mut engine);
+
+    engine.add_states(2, GameEntity{id: 2});
 
     engine.start();
 }

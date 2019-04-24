@@ -8,7 +8,7 @@ pub trait SceneUpdate {
 
 pub trait EntityState {
     fn on_create(&mut self, data: &mut ComponentStorageManager);
-    fn on_update(&mut self, data: &mut ComponentStorageManager);
+    fn on_update(&mut self, data: &mut ComponentStorageManager, delta: f32);
     fn on_delete(&mut self, data: &mut ComponentStorageManager);
 }
 
@@ -30,9 +30,9 @@ impl StateSystem {
         self.states_manager.insert(id, Box::new(states));
     }
 
-    pub fn run_update_state(&mut self, data: &mut ComponentStorageManager) {
+    pub fn run_update_state(&mut self, data: &mut ComponentStorageManager, delta: f32) {
         for (_, states) in self.states_manager.iter_mut() {
-            states.on_update(data);
+            states.on_update(data, delta);
         }
     }
 }

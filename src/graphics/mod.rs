@@ -292,8 +292,8 @@ impl Engine {
                 },
                 _ => (),
             });
-
-            self.states_system.run_update_state(&mut self.storage);
+            let delta = (delta_time.as_millis() as f32) / 1000.0;
+            self.states_system.run_update_state(&mut self.storage, delta);
             self.render_system.render(&mut self.storage);
 
             window.swap_buffers().unwrap();
