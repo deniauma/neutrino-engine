@@ -12,12 +12,15 @@ pub mod shader;
 pub mod transform;
 pub mod scene;
 pub mod states;
+pub mod primitives;
+pub mod entity;
 
 use self::transform::Transform;
 use self::mesh::*;
 use self::shader::*;
 use self::scene::*;
 use self::states::*;
+use self::primitives::*;
 
 
 pub type Index = u32;
@@ -133,6 +136,8 @@ impl RenderSystem {
             trans.update_local_transform();
         }
 
+        unsafe { gl::Clear(gl::COLOR_BUFFER_BIT) };
+
         for (id, mesh) in storage.mesh_manager.iter() {
             let material = storage.get_material(*id).unwrap();
             let transform = storage.get_transform(*id).unwrap();
@@ -141,7 +146,6 @@ impl RenderSystem {
                 None => gl_object = self.create_object_to_render(*id, mesh),
                 Some(object) => gl_object = *object,
             }
-            unsafe { gl::Clear(gl::COLOR_BUFFER_BIT) };
             
             //Compute MVP matrix
             let view_mat = cgmath::Matrix4::from_translation(cgmath::Vector3::new(0.0, 0.0, -3.0));

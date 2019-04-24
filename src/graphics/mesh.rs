@@ -94,7 +94,7 @@ impl MeshBuilder {
         for (i, pos) in positions.iter().enumerate() {
             //self.index(*pos);
             let mut id = 0;
-            for (k, (vert, ind)) in cache.iter().enumerate() {
+            for (_, (vert, ind)) in cache.iter().enumerate() {
                 if *pos == *vert {
                     id = *ind;
                     break;

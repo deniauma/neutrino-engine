@@ -3,6 +3,7 @@ use crate::graphics::mesh::*;
 use crate::graphics::shader::*;
 use crate::graphics::transform::Transform;
 use crate::graphics::states::*;
+use crate::graphics::entity::*;
 
 
 fn main() {
@@ -62,7 +63,7 @@ fn main() {
             let trans = data.get_mut_transform(self.id).unwrap();
             //trans.rotation.z = 45.0;
             //trans.rotation.set_x(45.0);
-            // trans.translation.x = 1.0;
+            trans.translation.x = 2.0;
             trans.scale.x = 1.0;
             trans.scale.y = 1.0;
         }
@@ -73,6 +74,11 @@ fn main() {
     }
 
     engine.add_states(rectangle.id, GameEntity{id: rectangle.id});
+
+    //using EntityBuilder
+    let mut entity_builder = EntityBuilder::new();
+    entity_builder.with_quad_mesh(1.0);
+    entity_builder.build(&mut engine);
 
     engine.start();
 }

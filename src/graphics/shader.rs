@@ -18,11 +18,13 @@ impl MaterialBuilder {
         out vec3 ourColor;
         out vec2 TexCoord;
 
-        uniform mat4 transform;
+        uniform mat4 model;
+        uniform mat4 view;
+        uniform mat4 projection;
 
         void main()
         {
-            gl_Position = transform * vec4(aPos, 1.0);
+            gl_Position = projection * view * model * vec4(aPos, 1.0);
             ourColor = aColor;
             TexCoord = vec2(aTexCoord.x, aTexCoord.y);
         }
@@ -92,7 +94,7 @@ impl MaterialBuilder {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct Material {
     pub shader: Shader,
     texture: Texture,
@@ -106,13 +108,20 @@ impl Material {
         }
     }
 
+    pub fn new_without_texture(shader: Shader) -> Self {
+        Self {
+            shader: shader,
+            texture: Texture::new_empty(),
+        }
+    }
+
     pub fn bind(&self) {
         self.texture.bind();
         self.shader.use_program();
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct Texture {
     id: gl::types::GLuint,
 }
@@ -172,7 +181,7 @@ impl Texture {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct Shader {
     id: gl::types::GLuint,
 }
