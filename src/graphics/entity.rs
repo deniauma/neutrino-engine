@@ -26,6 +26,11 @@ impl EntityBuilder {
         self
     }
 
+    pub fn with_texture(&mut self, texture_path: &str) -> &mut Self {
+        self.material = MaterialBuilder::simple_texture_material_2d(texture_path);
+        self
+    }
+
     pub fn with_transform(&mut self, transform: Transform) -> &mut Self {
         self.transform = transform;
         self
@@ -33,6 +38,12 @@ impl EntityBuilder {
 
     pub fn with_quad_mesh(&mut self, size: f32) -> &mut Self {
         self.mesh = PrimitiveBuilder::quad();
+        self.transform.scale *= size;
+        self
+    }
+
+    pub fn with_cube_mesh(&mut self, size: f32) -> &mut Self {
+        self.mesh = PrimitiveBuilder::cube();
         self.transform.scale *= size;
         self
     }

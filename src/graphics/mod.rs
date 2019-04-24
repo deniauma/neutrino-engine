@@ -136,7 +136,7 @@ impl RenderSystem {
             trans.update_local_transform();
         }
 
-        unsafe { gl::Clear(gl::COLOR_BUFFER_BIT) };
+        unsafe { gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT) };
 
         for (id, mesh) in storage.mesh_manager.iter() {
             let material = storage.get_material(*id).unwrap();
@@ -148,7 +148,7 @@ impl RenderSystem {
             }
             
             //Compute MVP matrix
-            let view_mat = cgmath::Matrix4::from_translation(cgmath::Vector3::new(0.0, 0.0, -3.0));
+            let view_mat = cgmath::Matrix4::from_translation(cgmath::Vector3::new(-1.0, 0.0, -3.0));
             let projection_mat: cgmath::Matrix4<f32> = cgmath::perspective(cgmath::Deg(45.0), 1024.0/768.0, 0.1, 100.0);
             let model_mat = transform.local_transform;
 
@@ -402,8 +402,8 @@ impl Window {
         }
         unsafe {
             gl::load_with(|symbol| self.gl_window.get_proc_address(symbol) as *const _);
-            println!("Test before laoding fl fn");
             gl::ClearColor(0.0, 0.0, 1.0, 1.0);
+            gl::Enable(gl::DEPTH_TEST);  
         }
         let gl_version = unsafe {
             CStr::from_ptr(gl::GetString(gl::VERSION) as *const i8)

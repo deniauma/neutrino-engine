@@ -82,11 +82,25 @@ impl MeshBuilder {
         self
     }
 
+    pub fn add_vertex_from_vec(&mut self, vertex: Vec<Vertex>) -> &mut Self {
+        for v in vertex.iter() {
+            self.mesh.positions.push(*v);
+        }
+        self
+    }
+
+    pub fn add_uv_from_vec(&mut self, uv: Vec<UV>) -> &mut Self {
+        for u in uv.iter() {
+            self.mesh.texture_coords.push(*u);
+        }
+        self
+    }
+
     pub fn auto_index(&mut self) -> &mut Self {
         self.mesh.indices.clear();
         let positions = &self.mesh.positions;
         let mut index = 0;
-        let mut cache: Vec<(Vertex, u32)> = Vec::new();
+        let mut cache: Vec<(Vertice, u32)> = Vec::new();
         let mut vertices: Vec<Vertex> = vec!();
         let mut indices: Vec<u32> = vec!();
         let mut colors: Vec<Color> = vec!();
@@ -94,8 +108,9 @@ impl MeshBuilder {
         for (i, pos) in positions.iter().enumerate() {
             //self.index(*pos);
             let mut id = 0;
+            let complete_vertex = self.mesh.build_vertex(i);
             for (_, (vert, ind)) in cache.iter().enumerate() {
-                if *pos == *vert {
+                if complete_vertex == *vert {
                     id = *ind;
                     break;
                 }
@@ -103,7 +118,7 @@ impl MeshBuilder {
             if id == 0 {
                 id = index;
                 index += 1;
-                cache.push((*pos, id));
+                cache.push((complete_vertex, id));
                 vertices.push(*pos);
                 colors.push(self.mesh.colors[i]);
                 texture_coords.push(self.mesh.texture_coords[i]);
@@ -117,10 +132,21 @@ impl MeshBuilder {
         self
     }
 
-    pub fn commit(&self) -> Mesh {
+    pub fn commit(&mut self) -> Mesh {
+        if self.mesh.colors.is_empty() {
+            let white = Color::new(1.0, 1.0, 1.0);
+            for _ in 0..self.mesh.positions.len() {
+                self.mesh.colors.push(white);
+            }
+        }
+        if self.mesh.indices.is_empty() {
+            self.auto_index();
+        }
         self.mesh.clone()
     }
 }
+
+pub type Vertice = [f32;9];
 
 #[derive(Debug, Clone)]
 pub struct Mesh {
@@ -150,6 +176,22 @@ impl Mesh {
             texture_coords: texture_coords,
             indices: vertex_indices,
         }
+    }
+
+    fn build_vertex(&self, index: usize) -> Vertice {
+        let mut vert: Vertice = [0.0;9];
+
+        vert[0] = self.positions[index].x;
+        vert[1] = self.positions[index].y;
+        vert[2] = self.positions[index].z;
+        vert[3] = self.colors[index].r;
+        vert[4] = self.colors[index].g;
+        vert[5] = self.colors[index].b;
+        vert[6] = self.colors[index].a;
+        vert[7] = self.texture_coords[index].u;
+        vert[8] = self.texture_coords[index].v;
+
+        return vert
     }
 
     fn build_vertices(positions: &Vec<Vertex>, colors: &Vec<Color>, uvs: &Vec<UV>) -> Vec<f32> {

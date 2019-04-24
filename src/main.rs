@@ -20,28 +20,8 @@ fn main() {
     mesh_builder.auto_index();
     let rectangle = engine.create_scene_object();
 
-    /*let indices: Vec<u32> = vec![0, 1, 3, 1, 2, 3];
-    let positions = vec![
-        Vertex::new(0.5, 0.5, 0.0),
-        Vertex::new(0.5, -0.5, 0.0),
-        Vertex::new(-0.5, -0.5, 0.0),
-        Vertex::new(-0.5, 0.5, 0.0),
-    ];
-    let colors = vec![
-        Color::new(1.0, 0.0, 0.0),
-        Color::new(0.0, 1.0, 0.0),
-        Color::new(0.0, 0.0, 1.0),
-        Color::new(1.0, 1.0, 0.0),
-    ];
-    let text_coords = vec![
-        UV::new(1.0, 1.0),
-        UV::new(1.0, 0.0),
-        UV::new(0.0, 0.0),
-        UV::new(0.0, 1.0),
-    ];*/
     engine.add_mesh(
         rectangle.id,
-        //Mesh::new(positions, colors, text_coords, indices),
         mesh_builder.commit(),
     );
     engine.add_material(
@@ -77,7 +57,8 @@ fn main() {
 
     //using EntityBuilder
     let mut entity_builder = EntityBuilder::new();
-    entity_builder.with_quad_mesh(1.0);
+    //entity_builder.with_quad_mesh(1.0);
+    entity_builder.with_cube_mesh(1.0).with_texture("container.jpg");
     entity_builder.build(&mut engine);
 
     engine.start();
