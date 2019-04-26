@@ -14,6 +14,7 @@ pub mod scene;
 pub mod states;
 pub mod primitives;
 pub mod entity;
+pub mod camera;
 
 use self::transform::Transform;
 use self::mesh::*;
@@ -21,6 +22,7 @@ use self::shader::*;
 use self::scene::*;
 use self::states::*;
 use self::primitives::*;
+use self::camera::Camera;
 
 
 pub type Index = u32;
@@ -131,7 +133,7 @@ impl RenderSystem {
     }
 
 
-    fn render(&mut self, storage: &mut ComponentStorageManager) {
+    fn render(&mut self, storage: &mut ComponentStorageManager, camera: Camera) {
         for (_, trans) in storage.transform_manager.iter_mut() {
             trans.update_local_transform();
         }
@@ -148,7 +150,8 @@ impl RenderSystem {
             }
             
             //Compute MVP matrix
-            let view_mat = cgmath::Matrix4::from_translation(cgmath::Vector3::new(-1.0, 0.0, -3.0));
+            let view_mat = camera.lookat();
+            //let view_mat = cgmath::Matrix4::from_translation(cgmath::Vector3::new(-1.0, 0.0, -3.0));
             let projection_mat: cgmath::Matrix4<f32> = cgmath::perspective(cgmath::Deg(45.0), 1024.0/768.0, 0.1, 100.0);
             let model_mat = transform.local_transform;
 
@@ -245,6 +248,7 @@ pub struct Engine {
     render_system: RenderSystem,
     states_system: StateSystem,
     entity_count: Index,
+    camera: Camera,
 }
 
 impl Engine {
@@ -255,6 +259,7 @@ impl Engine {
             render_system: RenderSystem::new(),
             states_system: StateSystem::new(),
             entity_count: 0,
+            camera: Camera::default(),
         }
     }
 
@@ -294,7 +299,7 @@ impl Engine {
             });
             let delta = (delta_time.as_millis() as f32) / 1000.0;
             self.states_system.run_update_state(&mut self.storage, delta);
-            self.render_system.render(&mut self.storage);
+            self.render_system.render(&mut self.storage, self.camera);
 
             window.swap_buffers().unwrap();
         }
