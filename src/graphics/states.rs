@@ -1,4 +1,5 @@
 use crate::graphics::{Index, ComponentStorageManager};
+use crate::graphics::inputs::InputSystem;
 use std::collections::HashMap;
 
 
@@ -30,7 +31,7 @@ impl StateSystem {
         self.states_manager.insert(id, Box::new(states));
     }
 
-    pub fn run_update_state(&mut self, data: &mut ComponentStorageManager, delta: f32) {
+    pub fn run_update_state(&mut self, data: &mut ComponentStorageManager, input: &InputSystem, delta: f32) {
         for (_, states) in self.states_manager.iter_mut() {
             states.on_update(data, delta);
         }

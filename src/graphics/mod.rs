@@ -15,6 +15,7 @@ pub mod states;
 pub mod primitives;
 pub mod entity;
 pub mod camera;
+pub mod inputs;
 
 use self::transform::Transform;
 use self::mesh::*;
@@ -23,6 +24,7 @@ use self::scene::*;
 use self::states::*;
 use self::primitives::*;
 use self::camera::Camera;
+use self::inputs::InputSystem;
 
 
 pub type Index = u32;
@@ -242,11 +244,14 @@ impl ComponentStorageManager {
     }
 }
 
+pub type GameData<'a> = (Index, &'a mut ComponentStorageManager, &'a InputSystem);
+
 pub struct Engine {
     window: Window,
     storage: ComponentStorageManager,
     render_system: RenderSystem,
     states_system: StateSystem,
+    input_system: InputSystem,
     entity_count: Index,
     camera: Camera,
 }
@@ -258,6 +263,7 @@ impl Engine {
             storage: ComponentStorageManager::new(),
             render_system: RenderSystem::new(),
             states_system: StateSystem::new(),
+            input_system: InputSystem::new() ,
             entity_count: 0,
             camera: Camera::default(),
         }
@@ -273,36 +279,46 @@ impl Engine {
 
     fn main_loop(&mut self) {
         let mut running = true;
-        let events = &mut self.window.events_loop;
-        let window = &mut self.window.gl_window;
+
         let start = Instant::now();
         let mut prev_elapsed_time = start.elapsed();
         while running {
             //Calculate delta time since last loop iteration
             let elapsed_time = start.elapsed();
             let delta_time = elapsed_time - prev_elapsed_time;
-            if delta_time.subsec_micros() > 0 {
-                window.set_title(format!("{} fps ({} ms)", 1000000 / Self::duration_to_micros(delta_time), Self::duration_to_millis(delta_time)).as_str());
-            }
             prev_elapsed_time = elapsed_time;
-
-            events.poll_events(|event| match event {
-                glutin::Event::WindowEvent { event, .. } => match event {
-                    glutin::WindowEvent::CloseRequested => running = false,
-                    glutin::WindowEvent::Resized(logical_size) => {
-                        let dpi_factor = window.get_hidpi_factor();
-                        window.resize(logical_size.to_physical(dpi_factor));
-                    }
-                    _ => (),
-                },
-                _ => (),
-            });
+            running = self.manage_events();
+            
             let delta = (delta_time.as_millis() as f32) / 1000.0;
-            self.states_system.run_update_state(&mut self.storage, delta);
+            self.states_system.run_update_state(&mut self.storage, &self.input_system, delta);
             self.render_system.render(&mut self.storage, self.camera);
 
-            window.swap_buffers().unwrap();
+            self.window.gl_window.swap_buffers().unwrap();
+            if delta_time.subsec_micros() > 0 {
+                self.window.gl_window.set_title(format!("{} fps ({} ms)", 1000000 / Self::duration_to_micros(delta_time), Self::duration_to_millis(delta_time)).as_str());
+            }
         }
+    }
+
+    fn manage_events(&mut self) -> bool {
+        let events = &mut self.window.events_loop;
+        let window = &mut self.window.gl_window;
+        let inputs = &mut self.input_system;
+        let mut running = true;
+
+        events.poll_events(|event| match event {
+            glutin::Event::WindowEvent { event, .. } => match event {
+                glutin::WindowEvent::CloseRequested => running = false,
+                glutin::WindowEvent::Resized(logical_size) => {
+                    let dpi_factor = window.get_hidpi_factor();
+                    window.resize(logical_size.to_physical(dpi_factor));
+                }
+                glutin::WindowEvent::KeyboardInput {input, ..} => inputs.get_key_event(input),
+                _ => (),
+            },
+            _ => (),
+        });
+        running
     }
 
     fn duration_to_millis(dur: Duration) -> u64 {
