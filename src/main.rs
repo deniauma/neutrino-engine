@@ -50,6 +50,19 @@ fn main() {
                 trans.rotation.y +=  delta*20.0;
                 trans.rotation.x +=  delta*20.0;
             }
+            let camera = data.get_mut_camera();
+            if input.is_key_pressed(Key::Z) == ButtonState::PRESSED {
+                camera.position.z -= 1.0;
+            }
+            if input.is_key_pressed(Key::S) == ButtonState::PRESSED {
+                camera.position.z += 1.0;
+            }
+            if input.is_key_pressed(Key::Q) == ButtonState::PRESSED {
+                camera.position.x -= 1.0;
+            }
+            if input.is_key_pressed(Key::D) == ButtonState::PRESSED {
+                camera.position.x += 1.0;
+            }
             
         }
 

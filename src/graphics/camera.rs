@@ -4,8 +4,8 @@ pub use cgmath::{Vector3, Matrix4, Point3, Quaternion, Euler, Deg};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Camera {
-    position: Vector3<f32>,
-    direction: Vector3<f32>
+    pub position: Vector3<f32>,
+    pub direction: Vector3<f32>
 }
 
 impl Camera {

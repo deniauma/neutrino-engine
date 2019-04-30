@@ -135,7 +135,7 @@ impl RenderSystem {
     }
 
 
-    fn render(&mut self, storage: &mut ComponentStorageManager, camera: Camera) {
+    fn render(&mut self, storage: &mut ComponentStorageManager) {
         for (_, trans) in storage.transform_manager.iter_mut() {
             trans.update_local_transform();
         }
@@ -152,7 +152,7 @@ impl RenderSystem {
             }
             
             //Compute MVP matrix
-            let view_mat = camera.lookat();
+            let view_mat = storage.camera.lookat();
             //let view_mat = cgmath::Matrix4::from_translation(cgmath::Vector3::new(-1.0, 0.0, -3.0));
             let projection_mat: cgmath::Matrix4<f32> = cgmath::perspective(cgmath::Deg(45.0), 1024.0/768.0, 0.1, 100.0);
             let model_mat = transform.local_transform;
@@ -188,6 +188,7 @@ pub struct ComponentStorageManager {
     transform_manager: HashMap<Index, Transform>,
     material_manager: HashMap<Index, Material>,
     update_manager: HashMap<Index, Box<SceneUpdate>>,
+    camera: Camera,
 }
 
 impl ComponentStorageManager {
@@ -198,6 +199,7 @@ impl ComponentStorageManager {
             transform_manager: HashMap::new(),
             material_manager: HashMap::new(),
             update_manager: HashMap::new(),
+            camera: Camera::default(),
         }
     }
 
@@ -229,18 +231,26 @@ impl ComponentStorageManager {
         }
     }
 
-    fn get_material(&self, id: Index) -> Result<&Material, String> {
+    pub fn get_material(&self, id: Index) -> Result<&Material, String> {
         match self.material_manager.get(&id) {
             None => Err("Material doesn't exist!".to_string()),
             Some(material) => Ok(material),
         }
     }
 
-    fn get_update(&self, id: Index) -> Result<&Box<SceneUpdate>, String> {
+    pub fn get_update(&self, id: Index) -> Result<&Box<SceneUpdate>, String> {
         match self.update_manager.get(&id) {
             None => Err("Update doesn't exist!".to_string()),
             Some(update) => Ok(update),
         }
+    }
+    
+    pub fn get_camera(&self) -> &Camera {
+        &self.camera
+    }
+
+    pub fn get_mut_camera(&mut self) -> &mut Camera {
+        &mut self.camera
     }
 }
 
@@ -253,7 +263,6 @@ pub struct Engine {
     states_system: StateSystem,
     input_system: InputSystem,
     entity_count: Index,
-    camera: Camera,
 }
 
 impl Engine {
@@ -265,7 +274,6 @@ impl Engine {
             states_system: StateSystem::new(),
             input_system: InputSystem::new() ,
             entity_count: 0,
-            camera: Camera::default(),
         }
     }
 
@@ -291,7 +299,7 @@ impl Engine {
             
             let delta = (delta_time.as_millis() as f32) / 1000.0;
             self.states_system.run_update_state(&mut self.storage, &self.input_system, delta);
-            self.render_system.render(&mut self.storage, self.camera);
+            self.render_system.render(&mut self.storage);
 
             self.window.gl_window.swap_buffers().unwrap();
             if delta_time.subsec_micros() > 0 {
