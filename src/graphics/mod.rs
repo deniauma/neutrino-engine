@@ -313,13 +313,13 @@ impl Engine {
                     let dpi_factor = window.get_hidpi_factor();
                     window.resize(logical_size.to_physical(dpi_factor));
                 }
-                glutin::WindowEvent::KeyboardInput {input, ..} => inputs.get_key_event(input),
-                glutin::WindowEvent::MouseInput { button, state, .. } => inputs.get_mouse_button_event(button, state),
+                glutin::WindowEvent::KeyboardInput {input, ..} => inputs.set_key_event(input),
+                glutin::WindowEvent::MouseInput { button, state, .. } => inputs.set_mouse_button_event(button, state),
                 glutin::WindowEvent::MouseWheel { delta, ..} => (),
                 _ => (),
             },
             glutin::Event::DeviceEvent { event, .. } => match event {
-                glutin::DeviceEvent::MouseMotion { delta } => inputs.get_mouse_move_event(delta.0, delta.1),
+                glutin::DeviceEvent::MouseMotion { delta } => inputs.set_mouse_move_event(delta.0, delta.1),
                 _ => (),
             }
             _ => (),

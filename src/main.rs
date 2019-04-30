@@ -4,6 +4,7 @@ use crate::graphics::shader::*;
 use crate::graphics::transform::Transform;
 use crate::graphics::states::*;
 use crate::graphics::entity::*;
+use crate::graphics::inputs::*;
 
 
 fn main() {
@@ -39,14 +40,17 @@ fn main() {
 
         }
 
-        fn on_update(&mut self, data: &mut graphics::ComponentStorageManager, delta: f32){
+        fn on_update(&mut self, data: &mut graphics::ComponentStorageManager, input: &InputSystem, delta: f32){
             let trans = data.get_mut_transform(self.id).unwrap();
-            trans.rotation.y +=  delta*20.0;
-            trans.rotation.x +=  delta*20.0;
             //trans.rotation.set_x(45.0);
             trans.translation.x = 1.5;
             trans.scale.x = 1.0;
             trans.scale.y = 1.0;
+            if input.is_key_pressed(Key::Space) == ButtonState::PRESSED {
+                trans.rotation.y +=  delta*20.0;
+                trans.rotation.x +=  delta*20.0;
+            }
+            
         }
 
         fn on_delete(&mut self, data: &mut graphics::ComponentStorageManager){
