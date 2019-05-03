@@ -64,10 +64,10 @@ impl InputSystem {
                     ElementState::Pressed => self.keys_state.insert(key, ButtonState::PRESSED),
                     ElementState::Released => self.keys_state.insert(key, ButtonState::RELEASED),
                 };
-                match key {
+                /* match key {
                     Key::Z => println!("Z key event => {:?}", self.keys_state[&Key::Z]),
                     _ => println!("key event: {:?}", key),
-                }
+                } */
             },
             None => (),
         }

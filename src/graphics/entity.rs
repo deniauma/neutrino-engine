@@ -48,10 +48,11 @@ impl EntityBuilder {
         self
     }
 
-    pub fn build(self, engine: &mut Engine) {
+    pub fn build(&self, engine: &mut Engine) -> u32 {
         let entity = engine.create_scene_object();
-        engine.add_mesh(entity.id, self.mesh);
+        engine.add_mesh(entity.id, self.mesh.clone());
         engine.add_material(entity.id, self.material);
         engine.add_transform(entity.id, self.transform);
+        entity.id
     }
 }

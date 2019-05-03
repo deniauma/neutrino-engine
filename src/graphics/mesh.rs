@@ -62,8 +62,8 @@ impl MeshBuilder {
         }
     }
 
-    pub fn add_vertex(&mut self, vertex: Vertex) -> &mut Self {
-        self.mesh.positions.push(vertex);
+    pub fn add_vertex(&mut self, x: f32, y:f32, z: f32) -> &mut Self {
+        self.mesh.positions.push(Vertex::new(x, y, z));
         self
     }
 
@@ -106,8 +106,7 @@ impl MeshBuilder {
         let mut colors: Vec<Color> = vec!();
         let mut texture_coords: Vec<UV> = vec!();
         for (i, pos) in positions.iter().enumerate() {
-            //self.index(*pos);
-            let mut id = 0;
+            let mut id = index;
             let complete_vertex = self.mesh.build_vertex(i);
             for (_, (vert, ind)) in cache.iter().enumerate() {
                 if complete_vertex == *vert {
@@ -115,8 +114,7 @@ impl MeshBuilder {
                     break;
                 }
             }
-            if id == 0 {
-                id = index;
+            if id == index {
                 index += 1;
                 cache.push((complete_vertex, id));
                 vertices.push(*pos);
@@ -125,8 +123,10 @@ impl MeshBuilder {
             }
             indices.push(id);
         }
-        println!("New vertex data: {:?}", vertices);
-        println!("New index data: {:?}", indices);
+        // println!("New vertex data: {:?}", vertices);
+        // println!("Cache data: {:?}", cache);
+        // println!("New index data: {:?}", indices);
+        println!("Before indexing: {}, after indexing: {}", positions.len(), vertices.len());
         let new_mesh = Mesh::new(vertices, colors, texture_coords, indices);
         self.mesh = new_mesh;
         self
@@ -276,8 +276,8 @@ mod tests {
     #[test]
     fn mesh_builder_auto_index() {
         let mut mesh_builder = MeshBuilder::new();
-        mesh_builder.add_vertex(Vertex::new(0.5, 0.5, 0.0)).add_vertex(Vertex::new(0.5, -0.5, 0.0)).add_vertex(Vertex::new(-0.5, 0.5, 0.0));
-        mesh_builder.add_vertex(Vertex::new(0.5, -0.5, 0.0)).add_vertex(Vertex::new(-0.5, -0.5, 0.0)).add_vertex(Vertex::new(-0.5, 0.5, 0.0));
+        mesh_builder.add_vertex(0.5, 0.5, 0.0).add_vertex(0.5, -0.5, 0.0).add_vertex(-0.5, 0.5, 0.0);
+        mesh_builder.add_vertex(0.5, -0.5, 0.0).add_vertex(-0.5, -0.5, 0.0).add_vertex(-0.5, 0.5, 0.0);
         mesh_builder.add_color(Color::new(1.0, 0.0, 0.0)).add_color(Color::new(0.0, 1.0, 0.0)).add_color(Color::new(1.0, 1.0, 0.0));
         mesh_builder.add_color(Color::new(0.0, 1.0, 0.0)).add_color(Color::new(0.0, 0.0, 1.0)).add_color(Color::new(1.0, 1.0, 0.0));
         mesh_builder.add_uv(UV::new(1.0, 1.0)).add_uv(UV::new(1.0, 0.0)).add_uv(UV::new(0.0, 1.0));

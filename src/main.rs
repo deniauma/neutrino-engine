@@ -6,18 +6,45 @@ use crate::graphics::transform::Transform;
 use crate::graphics::states::*;
 use crate::graphics::entity::*;
 use crate::graphics::inputs::*;
-use crate::procedural::heigth_map;
+use crate::procedural::*;
 
+struct GameEntity;
 
-fn main() {
-    let map = heigth_map(10, 10);
-    println!("Height map: {:?}", map);
+impl EntityState for GameEntity {
+    fn on_create(&mut self, data: &mut graphics::ComponentStorageManager){
+
+    }
+
+    fn on_update(&mut self, data: &mut graphics::ComponentStorageManager, input: &InputSystem, delta: f32){
+        let camera = data.get_mut_camera();
+        let speed = 0.1;
+        if input.is_key_pressed(Key::Z) == ButtonState::PRESSED {
+            camera.position.z -= speed;
+        }
+        if input.is_key_pressed(Key::S) == ButtonState::PRESSED {
+            camera.position.z += speed;
+        }
+        if input.is_key_pressed(Key::Q) == ButtonState::PRESSED {
+            camera.position.x -= speed;
+        }
+        if input.is_key_pressed(Key::D) == ButtonState::PRESSED {
+            camera.position.x += speed;
+        }
+        
+    }
+
+    fn on_delete(&mut self, data: &mut graphics::ComponentStorageManager){
+
+    }
+}
+
+fn example1() {
     let mut engine = graphics::Engine::new();
     engine.init();
 
     let mut mesh_builder = MeshBuilder::new();
-    mesh_builder.add_vertex(Vertex::new(0.5, 0.5, 0.0)).add_vertex(Vertex::new(0.5, -0.5, 0.0)).add_vertex(Vertex::new(-0.5, 0.5, 0.0));
-    mesh_builder.add_vertex(Vertex::new(0.5, -0.5, 0.0)).add_vertex(Vertex::new(-0.5, -0.5, 0.0)).add_vertex(Vertex::new(-0.5, 0.5, 0.0));
+    mesh_builder.add_vertex(0.5, 0.5, 0.0).add_vertex(0.5, -0.5, 0.0).add_vertex(-0.5, 0.5, 0.0);
+    mesh_builder.add_vertex(0.5, -0.5, 0.0).add_vertex(-0.5, -0.5, 0.0).add_vertex(-0.5, 0.5, 0.0);
     mesh_builder.add_color(Color::new(1.0, 0.0, 0.0)).add_color(Color::new(0.0, 1.0, 0.0)).add_color(Color::new(1.0, 1.0, 0.0));
     mesh_builder.add_color(Color::new(0.0, 1.0, 0.0)).add_color(Color::new(0.0, 0.0, 1.0)).add_color(Color::new(1.0, 1.0, 0.0));
     mesh_builder.add_uv(UV::new(1.0, 1.0)).add_uv(UV::new(1.0, 0.0)).add_uv(UV::new(0.0, 1.0));
@@ -84,4 +111,20 @@ fn main() {
     engine.add_states(2, GameEntity{id: 2});
 
     engine.start();
+}
+
+fn example2() {
+    let map = heigth_map(50, 50);
+    // println!("Height map: {:?}", map);
+    let mut engine = graphics::Engine::new();
+    engine.init();
+    let mut entity_builder = EntityBuilder::new();
+    let id = entity_builder.with_mesh(generate_mesh(&map)).build(&mut engine);
+    engine.add_states(id, GameEntity{});
+    engine.start();
+}
+
+fn main() { 
+    // example1();
+    example2();
 }
