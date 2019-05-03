@@ -10,3 +10,4 @@ gl = "*"
 image = "*"
 math = { path = "math"}
 cgmath = "0.17.0"
+noise = "0.5.1"

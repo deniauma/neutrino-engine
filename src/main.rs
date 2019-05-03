@@ -1,13 +1,17 @@
 pub mod graphics;
+pub mod procedural;
 use crate::graphics::mesh::*;
 use crate::graphics::shader::*;
 use crate::graphics::transform::Transform;
 use crate::graphics::states::*;
 use crate::graphics::entity::*;
 use crate::graphics::inputs::*;
+use crate::procedural::heigth_map;
 
 
 fn main() {
+    let map = heigth_map(10, 10);
+    println!("Height map: {:?}", map);
     let mut engine = graphics::Engine::new();
     engine.init();
 
