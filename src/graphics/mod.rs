@@ -6,6 +6,7 @@ use glutin::GlContext;
 use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 use std::time::{Duration, Instant};
+use crate::server::debug;
 
 pub mod mesh;
 pub mod shader;
@@ -45,7 +46,7 @@ pub enum EngineComponent {
 struct RenderObject {
     vao: gl::types::GLuint,
     vbo: gl::types::GLuint,
-    ebo: gl::types::GLuint,
+    ebo: Option<gl::types::GLuint>,
 }
 
 impl RenderObject {
@@ -53,7 +54,7 @@ impl RenderObject {
         Self {
             vao: 0,
             vbo: 0,
-            ebo: 0,
+            ebo: None,
         }
     }
 }
@@ -78,9 +79,9 @@ impl RenderSystem {
         let mut gl_object = RenderObject::new();
         unsafe {
             gl::GenVertexArrays(1, &mut gl_object.vao);
-            gl::GenBuffers(1, &mut gl_object.vbo);
-            gl::GenBuffers(1, &mut gl_object.ebo);
             gl::BindVertexArray(gl_object.vao);
+            gl::GenBuffers(1, &mut gl_object.vbo);
+            
             gl::BindBuffer(gl::ARRAY_BUFFER, gl_object.vbo);
             gl::BufferData(
                 gl::ARRAY_BUFFER,                                   // target
@@ -88,13 +89,21 @@ impl RenderSystem {
                 mesh.get_vertices_data().as_ptr() as *const gl::types::GLvoid, // pointer to data
                 gl::STATIC_DRAW,                                    // usage
             );
-            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, gl_object.ebo);
-            gl::BufferData(
-                gl::ELEMENT_ARRAY_BUFFER,                          // target
-                mesh.size_of_indices() as gl::types::GLsizeiptr,   // size of data in bytes
-                mesh.indices.as_ptr() as *const gl::types::GLvoid, // pointer to data
-                gl::STATIC_DRAW,                                   // usage
-            );
+
+            //Generate EBO only if indices are present
+            if !mesh.indices.is_empty() {
+                println!("EBO generated!");
+                let mut ebo = 0;
+                gl::GenBuffers(1, &mut ebo);
+                gl_object.ebo = Some(ebo);
+                gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, gl_object.ebo.unwrap());
+                gl::BufferData(
+                    gl::ELEMENT_ARRAY_BUFFER,                          // target
+                    mesh.size_of_indices() as gl::types::GLsizeiptr,   // size of data in bytes
+                    mesh.indices.as_ptr() as *const gl::types::GLvoid, // pointer to data
+                    gl::STATIC_DRAW,                                   // usage
+                );
+            }
 
             gl::EnableVertexAttribArray(0); // this is "layout (location = 0)" in vertex shader
             gl::VertexAttribPointer(
@@ -130,7 +139,6 @@ impl RenderSystem {
             gl::BindVertexArray(0);
         }
         self.objects_to_render.insert(id, gl_object);
-
         return gl_object;
     }
 
@@ -164,12 +172,21 @@ impl RenderSystem {
 
             unsafe {
                 gl::BindVertexArray(gl_object.vao);
-                gl::DrawElements(
-                    gl::TRIANGLES,
-                    mesh.indices.len() as i32,
-                    gl::UNSIGNED_INT,
-                    std::ptr::null(),
-                );
+                match gl_object.ebo {
+                    None => {gl::DrawArrays(gl::TRIANGLES, 0, mesh.positions.len() as i32)},
+                    Some(ebo) => {gl::DrawElements(gl::TRIANGLES, mesh.indices.len() as i32, gl::UNSIGNED_INT,std::ptr::null())},
+                }
+            }
+        }
+        unsafe {
+            match gl::GetError(){
+                gl::NO_ERROR => (),
+                gl::INVALID_ENUM => println!("OpenGL error: INVALID_ENUM"),
+                gl::INVALID_VALUE => println!("OpenGL error: INVALID_VALUE"),
+                gl::INVALID_OPERATION => println!("OpenGL error: INVALID_OPERATION"),
+                gl::INVALID_FRAMEBUFFER_OPERATION => println!("OpenGL error: INVALID_FRAMEBUFFER_OPERATION"),
+                gl::OUT_OF_MEMORY => println!("OpenGL error: OUT_OF_MEMORY"),
+                _ => println!("OpenGL error: other"),
             }
         }
     }
@@ -283,6 +300,12 @@ impl Engine {
 
     pub fn start(&mut self) {
         self.main_loop();
+    }
+
+    pub fn start_debug_server(&self) {
+        std::thread::spawn(|| {
+            debug::open();
+        });
     }
 
     fn main_loop(&mut self) {

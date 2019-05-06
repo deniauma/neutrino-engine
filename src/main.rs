@@ -1,5 +1,7 @@
 pub mod graphics;
 pub mod procedural;
+pub mod server;
+use std::time::{Instant};
 use crate::graphics::mesh::*;
 use crate::graphics::shader::*;
 use crate::graphics::transform::Transform;
@@ -114,13 +116,17 @@ fn example1() {
 }
 
 fn example2() {
-    let map = heigth_map(50, 50);
+    let map = heigth_map(100, 100);
     // println!("Height map: {:?}", map);
     let mut engine = graphics::Engine::new();
     engine.init();
     let mut entity_builder = EntityBuilder::new();
+    let start = Instant::now();
     let id = entity_builder.with_mesh(generate_mesh(&map)).build(&mut engine);
+    let elapsed_time = start.elapsed();
+    println!("Time to generate terrain: {} ms", elapsed_time.as_millis());
     engine.add_states(id, GameEntity{});
+    engine.start_debug_server();
     engine.start();
 }
 

@@ -53,12 +53,16 @@ impl UV {
 #[derive(Debug, Clone)]
 pub struct MeshBuilder {
     mesh: Mesh,
+    index: u32,
+    cache: Vec<(Vertice, u32)>,
 }
 
 impl MeshBuilder {
     pub fn new() -> Self {
         MeshBuilder {
             mesh: Mesh::new_empty(),
+            index: 0,
+            cache: Vec::new(),
         }
     }
 
@@ -93,6 +97,36 @@ impl MeshBuilder {
         for u in uv.iter() {
             self.mesh.texture_coords.push(*u);
         }
+        self
+    }
+
+    pub fn add_full_vertice_info(&mut self, pos: Vertex, color: Color, uv: UV) -> &mut Self {
+        let mut index = self.index;
+        let mut new_vert: Vertice = [0.0;9];
+        new_vert[0] = pos.x;
+        new_vert[1] = pos.y;
+        new_vert[2] = pos.z;
+        new_vert[3] = color.r;
+        new_vert[4] = color.g;
+        new_vert[5] = color.b;
+        new_vert[6] = color.a;
+        new_vert[7] = uv.u;
+        new_vert[8] = uv.v;
+        for (_, (vert, ind)) in self.cache.iter().enumerate() {
+            if new_vert == *vert {
+                index = *ind;
+                break;
+            }
+        }
+        if index == self.index {
+            self.cache.push((new_vert, index));
+            self.add_vertex(pos.x, pos.y, pos.z);
+            self.add_color(color);
+            self.add_uv(uv);
+            self.index += 1;
+        }
+        self.add_index(index);
+        
         self
     }
 
@@ -139,9 +173,16 @@ impl MeshBuilder {
                 self.mesh.colors.push(white);
             }
         }
-        if self.mesh.indices.is_empty() {
+        /* if self.mesh.indices.is_empty() {
+            let start = std::time::Instant::now();
             self.auto_index();
+            println!("Time to auto index mesh w/o indices: {} ms", start.elapsed().as_millis());
+        } */
+        if self.mesh.vertices.is_empty() {
+            self.mesh.vertices = Mesh::build_vertices(&self.mesh.positions, &self.mesh.colors, &self.mesh.texture_coords);
         }
+        println!("New index data: {:?}", self.mesh.indices);
+        println!("Nb of vertices: {:?}", self.mesh.vertices.len());
         self.mesh.clone()
     }
 }
