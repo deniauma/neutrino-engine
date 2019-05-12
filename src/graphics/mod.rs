@@ -4,7 +4,7 @@ extern crate glutin;
 use glutin::dpi::*;
 use glutin::GlContext;
 use std::collections::HashMap;
-use std::ffi::{CStr, CString};
+use std::ffi::{CStr};
 use std::time::{Duration, Instant};
 use crate::server::debug;
 
@@ -22,7 +22,6 @@ pub mod renderer;
 use self::transform::Transform;
 use self::mesh::*;
 use self::shader::*;
-use self::scene::*;
 use self::states::*;
 use self::primitives::*;
 use self::camera::Camera;
