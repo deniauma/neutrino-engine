@@ -59,12 +59,17 @@ impl ComponentStorageManager {
         }
     }
 
-    fn get_mesh(&self, id: Index) -> Result<&Mesh, String> {
+    pub fn get_mesh(&self, id: Index) -> Result<&Mesh, String> {
         match self.mesh_manager.get(&id) {
             None => Err("Mesh doesn't exist!".to_string()),
             Some(mesh) => Ok(mesh),
         }
     }
+
+    pub fn get_mut_mesh(&mut self, id: Index) -> Option<&mut Mesh> {
+        self.mesh_manager.get_mut(&id)
+    }
+
 
     pub fn get_shader(&self, id: Index) -> Result<&Shader, String> {
         match self.shader_manager.get(&id) {
@@ -109,8 +114,6 @@ impl ComponentStorageManager {
         &mut self.camera
     }
 }
-
-pub type GameData<'a> = (Index, &'a mut ComponentStorageManager, &'a InputSystem);
 
 pub struct Engine {
     window: Window,

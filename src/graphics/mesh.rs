@@ -181,8 +181,8 @@ impl MeshBuilder {
         if self.mesh.vertices.is_empty() {
             self.mesh.vertices = Mesh::build_vertices(&self.mesh.positions, &self.mesh.colors, &self.mesh.texture_coords);
         }
-        println!("New index data: {:?}", self.mesh.indices);
-        println!("Nb of vertices: {:?}", self.mesh.vertices.len());
+        /* println!("New index data: {:?}", self.mesh.indices);
+        println!("Nb of vertices: {:?}", self.mesh.vertices.len()); */
         self.mesh.clone()
     }
 }
@@ -196,6 +196,7 @@ pub struct Mesh {
     pub colors: Vec<Color>,
     pub texture_coords: Vec<UV>,
     pub indices: Vec<u32>,
+    pub dirty: bool,
 }
 
 impl Mesh {
@@ -206,6 +207,7 @@ impl Mesh {
             colors: vec![],
             texture_coords: vec![],
             indices: vec![],
+            dirty: true,
         }
     }
 
@@ -216,7 +218,12 @@ impl Mesh {
             colors: colors,
             texture_coords: texture_coords,
             indices: vertex_indices,
+            dirty: true,
         }
+    }
+
+    pub fn is_dirty(&self) -> bool {
+        self.dirty
     }
 
     fn build_vertex(&self, index: usize) -> Vertice {
