@@ -10,15 +10,22 @@ use crate::graphics::entity::*;
 use crate::graphics::inputs::*;
 use crate::procedural::*;
 
-struct GameEntity;
+struct GameEntity {
+    freq: f64,
+}
 
 impl EntityState for GameEntity {
     fn on_create(&mut self, data: &mut graphics::ComponentStorageManager){
 
     }
 
-    fn on_update(&mut self, data: &mut graphics::ComponentStorageManager, input: &InputSystem, delta: f32){
-        let camera = data.get_mut_camera();
+    fn on_update(&mut self, data: GameData, delta: f32){
+        let (id, storage, input) = data;
+        /* let mesh = storage.get_mut_mesh(id).unwrap();
+        self.freq += delta as f64;
+        let map = heigth_map(100, 100, self.freq);
+        *mesh = generate_mesh(&map); */
+        let camera = storage.get_mut_camera();
         let speed = 0.1;
         if input.is_key_pressed(Key::Z) == ButtonState::PRESSED {
             camera.position.z -= speed;
@@ -73,8 +80,9 @@ fn example1() {
 
         }
 
-        fn on_update(&mut self, data: &mut graphics::ComponentStorageManager, input: &InputSystem, delta: f32){
-            let trans = data.get_mut_transform(self.id).unwrap();
+        fn on_update(&mut self, data: GameData, delta: f32){
+            let (id, storage, input) = data;
+            let trans = storage.get_mut_transform(self.id).unwrap();
             //trans.rotation.set_x(45.0);
             trans.translation.x = 1.5;
             trans.scale.x = 1.0;
@@ -83,7 +91,7 @@ fn example1() {
                 trans.rotation.y +=  delta*20.0;
                 trans.rotation.x +=  delta*20.0;
             }
-            let camera = data.get_mut_camera();
+            let camera = storage.get_mut_camera();
             if input.is_key_pressed(Key::Z) == ButtonState::PRESSED {
                 camera.position.z -= 1.0;
             }
@@ -116,7 +124,7 @@ fn example1() {
 }
 
 fn example2() {
-    let map = heigth_map(100, 100);
+    let map = heigth_map(100, 100, 5.0);
     // println!("Height map: {:?}", map);
     let mut engine = graphics::Engine::new();
     engine.init();
@@ -125,7 +133,7 @@ fn example2() {
     let id = entity_builder.with_mesh(generate_mesh(&map)).build(&mut engine);
     let elapsed_time = start.elapsed();
     println!("Time to generate terrain: {} ms", elapsed_time.as_millis());
-    engine.add_states(id, GameEntity{});
+    engine.add_states(id, GameEntity{ freq: 1.0 });
     engine.start_debug_server();
     engine.start();
 }

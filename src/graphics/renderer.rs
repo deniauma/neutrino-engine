@@ -103,6 +103,42 @@ impl RenderSystem {
         return gl_object;
     }
 
+    fn update_gl_object(&mut self, id: &Index, mesh: &Mesh) {
+        let gl_object = self.objects_to_render.get_mut(id).expect("Trying to update a gl_object that doesn't exist!");
+        unsafe {
+            gl::BindVertexArray(gl_object.vao);
+
+            //Update VBO
+            gl::BindBuffer(gl::ARRAY_BUFFER, gl_object.vbo);
+            gl::BufferData(
+                gl::ARRAY_BUFFER,                                   // target
+                mesh.size_of_vertices() as gl::types::GLsizeiptr,   // size of data in bytes
+                mesh.get_vertices_data().as_ptr() as *const gl::types::GLvoid, // pointer to data
+                gl::STATIC_DRAW,                                    // usage
+            );
+
+            //Generate EBO only if indices are present
+            if !mesh.indices.is_empty() {
+                println!("EBO generated!");
+                if gl_object.ebo.is_none() {
+                    let mut ebo = 0;
+                    gl::GenBuffers(1, &mut ebo);
+                    gl_object.ebo = Some(ebo);
+                }
+                gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, gl_object.ebo.unwrap());
+                gl::BufferData(
+                    gl::ELEMENT_ARRAY_BUFFER,                          // target
+                    mesh.size_of_indices() as gl::types::GLsizeiptr,   // size of data in bytes
+                    mesh.indices.as_ptr() as *const gl::types::GLvoid, // pointer to data
+                    gl::STATIC_DRAW,                                   // usage
+                );
+            }
+
+            gl::BindBuffer(gl::ARRAY_BUFFER, 0); // unbind the buffer
+            gl::BindVertexArray(0);
+        }
+    }
+
 
     pub fn render(&mut self, storage: &mut ComponentStorageManager) {
         for (_, trans) in storage.transform_manager.iter_mut() {
@@ -111,14 +147,21 @@ impl RenderSystem {
 
         unsafe { gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT) };
 
-        for (id, mesh) in storage.mesh_manager.iter() {
-            let material = storage.get_material(*id).unwrap();
-            let transform = storage.get_transform(*id).unwrap();
-            let gl_object: RenderObject;
-            match self.objects_to_render.get(&id) {
-                None => gl_object = self.create_object_to_render(*id, mesh),
-                Some(object) => gl_object = *object,
-            }
+        for (id, mesh) in storage.mesh_manager.iter_mut() {
+            let material = storage.material_manager.get(id).expect("No material found!"); //storage.get_material(*id).unwrap();
+            let transform = storage.transform_manager.get(id).expect("No transform found!"); //storage.get_transform(*id).unwrap();
+            let gl_object = match self.objects_to_render.get(&id) {
+                None => { 
+                    mesh.dirty = false;
+                    self.create_object_to_render(*id, mesh)
+                    },
+                Some(object) => *object,
+            };
+            //Check mesh dirty flag
+            if mesh.is_dirty() {
+                self.update_gl_object(id, mesh);
+                mesh.dirty = false;
+           }
             
             //Compute MVP matrix
             let view_mat = storage.camera.lookat();
@@ -136,7 +179,7 @@ impl RenderSystem {
                 gl::BindVertexArray(gl_object.vao);
                 match gl_object.ebo {
                     None => {gl::DrawArrays(gl::TRIANGLES, 0, mesh.positions.len() as i32)},
-                    Some(ebo) => {gl::DrawElements(gl::TRIANGLES, mesh.indices.len() as i32, gl::UNSIGNED_INT,std::ptr::null())},
+                    Some(_ebo) => {gl::DrawElements(gl::TRIANGLES, mesh.indices.len() as i32, gl::UNSIGNED_INT,std::ptr::null())},
                 }
             }
         }

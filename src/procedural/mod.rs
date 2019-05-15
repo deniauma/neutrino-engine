@@ -4,10 +4,10 @@ use noise::{Perlin, NoiseFn};
 use crate::graphics::mesh::{MeshBuilder, Vertex, Mesh, Color, UV};
 
 
-pub fn heigth_map(width: usize, height: usize) -> Vec<Vec<f64>> {
+pub fn heigth_map(width: usize, height: usize, freq: f64) -> Vec<Vec<f64>> {
     let mut map: Vec<Vec<f64>> = Vec::new();
     let perlin = Perlin::new();
-    let freq = 5.0;
+    //let freq = 5.0;
     for x in 0 .. width {
         map.insert(x, Vec::new());
         for y in 0 .. height {
