@@ -130,6 +130,7 @@ impl RenderSystem {
             material.shader.set_mat4("model", model_mat);
             material.shader.set_mat4("view", view_mat);
             material.shader.set_mat4("projection", projection_mat);
+            material.shader.set_vec3("lightColor", cgmath::Vector3 {x:0.3, y:0.4, z:0.3});
 
             unsafe {
                 gl::BindVertexArray(gl_object.vao);

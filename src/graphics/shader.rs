@@ -2,8 +2,8 @@ extern crate image;
 
 use image::GenericImageView;
 use std::ffi::CString;
-use cgmath::{Matrix4};
-use cgmath::prelude::*;
+pub use cgmath::{Matrix4, Vector3};
+pub use cgmath::prelude::*;
 
 pub struct MaterialBuilder {}
 
@@ -38,11 +38,12 @@ impl MaterialBuilder {
         in vec2 TexCoord;
 
         // texture sampler
+        uniform vec3 lightColor;
         uniform sampler2D texture1;
 
         void main()
         {
-            FragColor = texture(texture1, TexCoord) * vec4(ourColor, 1.0);
+            FragColor = texture(texture1, TexCoord) * vec4(lightColor * ourColor, 1.0);
         }
     "#;
 
@@ -228,6 +229,13 @@ impl Shader {
         unsafe {
             //print!("Unfiform loc: {}", gl::GetUniformLocation(self.id, mat_name.as_ptr()));
             gl::UniformMatrix4fv(gl::GetUniformLocation(self.id, mat_name.as_ptr()), 1, gl::FALSE, mat_ptr);
+        }
+    }
+
+    pub fn set_vec3(&self, name: &str, vec: Vector3<f32>) {
+        let vec_name = CString::new(name).unwrap();
+        unsafe {
+            gl::Uniform3fv(gl::GetUniformLocation(self.id, vec_name.as_ptr()), 1, vec.as_ptr());
         }
     }
 }
