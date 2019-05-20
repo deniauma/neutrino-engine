@@ -12,11 +12,11 @@ impl MaterialBuilder {
         let vert_source = r#"
         #version 330 core
         layout (location = 0) in vec3 aPos;
-        layout (location = 1) in vec3 aColor;
+        layout (location = 1) in vec4 aColor;
         layout (location = 2) in vec2 aTexCoord;
         layout (location = 3) in vec3 aNormal;
 
-        out vec3 ourColor;
+        out vec4 ourColor;
         out vec2 TexCoord;
         out vec3 FragPos;
         out vec3 Normal;
@@ -31,7 +31,7 @@ impl MaterialBuilder {
             FragPos = vec3(model * vec4(aPos, 1.0));
             ourColor = aColor;
             TexCoord = vec2(aTexCoord.x, aTexCoord.y);
-            Normal = aNormal;
+            Normal = mat3(transpose(inverse(model))) * aNormal;
         }
     "#;
 
@@ -39,7 +39,7 @@ impl MaterialBuilder {
         #version 330 core
         out vec4 FragColor;
 
-        in vec3 ourColor;
+        in vec4 ourColor;
         in vec2 TexCoord;
         in vec3 Normal; 
         in vec3 FragPos;
@@ -60,7 +60,7 @@ impl MaterialBuilder {
             float diff = max(dot(norm, lightDir), 0.0);
             vec3 diffuse = diff * lightColor;
 
-            vec3 result = (ambient + diffuse) * ourColor;
+            vec3 result = (ambient + diffuse) * vec3(ourColor);
             FragColor = texture(texture1, TexCoord) * vec4(result, 1.0);
         }
     "#;

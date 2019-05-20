@@ -1,3 +1,6 @@
+use cgmath::Vector3;
+use cgmath::prelude::*;
+
 #[derive(Debug,Copy, Clone)]
 pub struct Color {
     r: f32,
@@ -105,6 +108,13 @@ impl MeshBuilder {
         self
     }
 
+    pub fn add_normal_from_vec(&mut self, norm: Vec<Normal>) -> &mut Self {
+        for u in norm.iter() {
+            self.mesh.normals.push(*u);
+        }
+        self
+    }
+
     pub fn add_full_vertice_info(&mut self, pos: Vertex, color: Color, uv: UV, norm: Normal) -> &mut Self {
         let mut index = self.index;
         let mut new_vert: Vertice = [0.0;12];
@@ -136,6 +146,21 @@ impl MeshBuilder {
         self.add_index(index);
         
         self
+    }
+
+    pub fn gen_vertex_normal(&mut self) {
+        for i in 0..self.mesh.positions.len()/3 {
+            let n = Self::get_triangle_normal(self.mesh.positions[i*3], self.mesh.positions[i*3 + 1], self.mesh.positions[i*3 + 2]);
+            for _ in 0..3 {
+                self.add_normal(n);
+            }
+        }
+    }
+
+    pub fn get_triangle_normal(a: Vertex, b : Vertex, c: Vertex) -> Normal {
+        let ab = Vector3 {x: b.x - a.x, y: b.y - a.y, z: b.z - a.z};
+        let ac = Vector3 {x: c.x - a.x, y: c.y - a.y, z: c.z - a.z};
+        ab.cross(ac).normalize()
     }
 
     /* pub fn auto_index(&mut self) -> &mut Self {
@@ -192,6 +217,7 @@ impl MeshBuilder {
         if self.mesh.vertices.is_empty() {
             self.mesh.vertices = Mesh::build_vertices(&self.mesh.positions, &self.mesh.colors, &self.mesh.texture_coords, &self.mesh.normals);
         }
+        println!("Vertex data: {:?}", self.mesh.vertices);
         /* println!("New index data: {:?}", self.mesh.indices);
         println!("Nb of vertices: {:?}", self.mesh.vertices.len()); */
         self.mesh.clone()
@@ -282,6 +308,14 @@ impl Mesh {
 
     pub fn get_vertices_data(&self) -> &Vec<f32> {
         &self.vertices
+    }
+
+    pub fn print_vertices(&self) -> String {
+        let mut s = String::from("");
+        for i in 0..self.vertices.len()/12 {
+            s.push_str(&format!("{}, {}, {}  {}, {}, {}, {}  {}, {}  {}, {}, {}\n", self.vertices[i*12], self.vertices[i*12+1], self.vertices[i*12+2], self.vertices[i*12+3], self.vertices[i*12+4], self.vertices[i*12+5], self.vertices[i*12+6], self.vertices[i*12+7], self.vertices[i*12+8], self.vertices[i*12+9], self.vertices[i*12+10], self.vertices[i*12+11]));
+        }
+        s
     }
 
     pub fn size_of_vertex() -> usize {

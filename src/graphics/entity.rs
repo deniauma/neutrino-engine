@@ -1,4 +1,4 @@
-use crate::graphics::{Mesh, Material, MaterialBuilder, Transform, PrimitiveBuilder, Engine};
+use crate::graphics::{Mesh, Material, MaterialBuilder, Transform, PrimitiveBuilder, Engine, Color};
 
 #[derive(Debug)]
 pub struct EntityBuilder {
@@ -43,7 +43,7 @@ impl EntityBuilder {
     }
 
     pub fn with_cube_mesh(&mut self, size: f32) -> &mut Self {
-        self.mesh = PrimitiveBuilder::cube();
+        self.mesh = PrimitiveBuilder::cube(Color::new(1.0, 0.0, 0.0));
         self.transform.scale *= size;
         self
     }

@@ -138,7 +138,16 @@ fn example2() {
     engine.start();
 }
 
+fn example3() {
+    let mut engine = graphics::Engine::new();
+    engine.init();
+    let mut entity_builder = EntityBuilder::new();
+    let id = entity_builder.with_cube_mesh(1.0).build(&mut engine);
+    engine.start();
+}
+
 fn main() { 
     // example1();
-    example2();
+    // example2();
+    example3();
 }
