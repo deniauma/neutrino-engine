@@ -77,7 +77,7 @@ impl RenderSystem {
                 (mesh.size_of_stride()) as gl::types::GLint, // stride (byte offset between consecutive attributes)
                 std::ptr::null(), // offset of the first component
             );
-
+            
             gl::EnableVertexAttribArray(1); // this is "layout (location = 1)" in vertex shader
             gl::VertexAttribPointer(
                 1,         // index of the generic vertex attribute ("layout (location = 1)")

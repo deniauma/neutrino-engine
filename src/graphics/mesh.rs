@@ -378,7 +378,7 @@ impl Mesh {
     }
 
     pub fn normal_offset(&self) -> usize {
-        self.uv_offset() + std::mem::size_of::<Normal>()
+        self.uv_offset() + std::mem::size_of::<UV>()
     }
 }
 
