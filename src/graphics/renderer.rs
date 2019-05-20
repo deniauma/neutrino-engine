@@ -96,6 +96,16 @@ impl RenderSystem {
                 (mesh.uv_offset()) as *const gl::types::GLvoid, // offset of the first component
             );
 
+            gl::EnableVertexAttribArray(3); // this is "layout (location = 3)" in vertex shader
+            gl::VertexAttribPointer(
+                3,         // index of the generic vertex attribute ("layout (location =3)")
+                Mesh::nb_elements_per_normal(),         // the number of components per generic vertex attribute
+                gl::FLOAT, // data type
+                gl::FALSE, // normalized (int-to-float conversion)
+                (mesh.size_of_stride()) as gl::types::GLint, // stride (byte offset between consecutive attributes)
+                (mesh.normal_offset()) as *const gl::types::GLvoid, // offset of the first component
+            );
+
             gl::BindBuffer(gl::ARRAY_BUFFER, 0); // unbind the buffer
             gl::BindVertexArray(0);
         }
@@ -174,6 +184,7 @@ impl RenderSystem {
             material.shader.set_mat4("view", view_mat);
             material.shader.set_mat4("projection", projection_mat);
             material.shader.set_vec3("lightColor", cgmath::Vector3 {x:0.3, y:0.4, z:0.3});
+            material.shader.set_vec3("lightPos", cgmath::Vector3 {x:1.0, y:1.0, z:1.0});
 
             unsafe {
                 gl::BindVertexArray(gl_object.vao);

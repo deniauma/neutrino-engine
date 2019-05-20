@@ -160,15 +160,18 @@ impl Engine {
             let elapsed_time = start.elapsed();
             let delta_time = elapsed_time - prev_elapsed_time;
             prev_elapsed_time = elapsed_time;
+
+            // frame time
+            let start_frame = Instant::now();
             running = self.manage_events();
             
             let delta = (delta_time.as_millis() as f32) / 1000.0;
             self.states_system.run_update_state(&mut self.storage, &self.input_system, delta);
             self.render_system.render(&mut self.storage);
-
+            let frame_duration = start_frame.elapsed().as_millis();
             self.window.gl_window.swap_buffers().unwrap();
             if delta_time.subsec_micros() > 0 {
-                self.window.gl_window.set_title(format!("{} fps ({} ms)", 1000000 / Self::duration_to_micros(delta_time), Self::duration_to_millis(delta_time)).as_str());
+                self.window.gl_window.set_title(format!("{} fps ({} ms) - frame = {} ms", 1000000 / Self::duration_to_micros(delta_time), Self::duration_to_millis(delta_time), frame_duration).as_str());
             }
         }
     }

@@ -1,4 +1,4 @@
-use crate::graphics::{Mesh, Vertex, Color, UV, MeshBuilder};
+use crate::graphics::{Mesh, Vertex, Color, UV, MeshBuilder, Normal};
 
 #[derive(Debug)]
 pub struct PrimitiveBuilder {
@@ -26,8 +26,14 @@ impl PrimitiveBuilder {
             UV::new(0.0, 0.0),
             UV::new(0.0, 1.0),
         ];
+        let normals = vec![
+            Normal {x: 0.0, y: 1.0, z: 0.0},
+            Normal {x: 0.0, y: 1.0, z: 0.0},
+            Normal {x: 0.0, y: 1.0, z: 0.0},
+            Normal {x: 0.0, y: 1.0, z: 0.0},
+        ];
 
-        Mesh::new(positions, colors, uvs, indices)
+        Mesh::new(positions, colors, uvs, normals, indices)
     }
 
     pub fn cube() -> Mesh {

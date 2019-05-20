@@ -81,6 +81,11 @@ impl MeshBuilder {
         self
     }
 
+    pub fn add_normal(&mut self, norm: Normal) -> &mut Self {
+        self.mesh.normals.push(norm);
+        self
+    }
+
     pub fn add_index(&mut self, index: u32) -> &mut Self {
         self.mesh.indices.push(index);
         self
@@ -100,9 +105,9 @@ impl MeshBuilder {
         self
     }
 
-    pub fn add_full_vertice_info(&mut self, pos: Vertex, color: Color, uv: UV) -> &mut Self {
+    pub fn add_full_vertice_info(&mut self, pos: Vertex, color: Color, uv: UV, norm: Normal) -> &mut Self {
         let mut index = self.index;
-        let mut new_vert: Vertice = [0.0;9];
+        let mut new_vert: Vertice = [0.0;12];
         new_vert[0] = pos.x;
         new_vert[1] = pos.y;
         new_vert[2] = pos.z;
@@ -112,6 +117,9 @@ impl MeshBuilder {
         new_vert[6] = color.a;
         new_vert[7] = uv.u;
         new_vert[8] = uv.v;
+        new_vert[9] = norm.x;
+        new_vert[10] = norm.y;
+        new_vert[11] = norm.z;
         for (_, (vert, ind)) in self.cache.iter().enumerate() {
             if new_vert == *vert {
                 index = *ind;
@@ -130,7 +138,7 @@ impl MeshBuilder {
         self
     }
 
-    pub fn auto_index(&mut self) -> &mut Self {
+    /* pub fn auto_index(&mut self) -> &mut Self {
         self.mesh.indices.clear();
         let positions = &self.mesh.positions;
         let mut index = 0;
@@ -157,14 +165,11 @@ impl MeshBuilder {
             }
             indices.push(id);
         }
-        // println!("New vertex data: {:?}", vertices);
-        // println!("Cache data: {:?}", cache);
-        // println!("New index data: {:?}", indices);
         println!("Before indexing: {}, after indexing: {}", positions.len(), vertices.len());
         let new_mesh = Mesh::new(vertices, colors, texture_coords, indices);
         self.mesh = new_mesh;
         self
-    }
+    } */
 
     pub fn commit(&mut self) -> Mesh {
         if self.mesh.colors.is_empty() {
@@ -173,13 +178,19 @@ impl MeshBuilder {
                 self.mesh.colors.push(white);
             }
         }
+        if self.mesh.normals.is_empty() {
+            let n = Normal {x: 0.0, y: 1.0, z: 0.0};
+            for _ in 0..self.mesh.positions.len() {
+                self.mesh.normals.push(n);
+            }
+        }
         /* if self.mesh.indices.is_empty() {
             let start = std::time::Instant::now();
             self.auto_index();
             println!("Time to auto index mesh w/o indices: {} ms", start.elapsed().as_millis());
         } */
         if self.mesh.vertices.is_empty() {
-            self.mesh.vertices = Mesh::build_vertices(&self.mesh.positions, &self.mesh.colors, &self.mesh.texture_coords);
+            self.mesh.vertices = Mesh::build_vertices(&self.mesh.positions, &self.mesh.colors, &self.mesh.texture_coords, &self.mesh.normals);
         }
         /* println!("New index data: {:?}", self.mesh.indices);
         println!("Nb of vertices: {:?}", self.mesh.vertices.len()); */
@@ -187,7 +198,8 @@ impl MeshBuilder {
     }
 }
 
-pub type Vertice = [f32;9];
+pub type Vertice = [f32;12];
+pub type Normal = cgmath::Vector3<f32>;
 
 #[derive(Debug, Clone)]
 pub struct Mesh {
@@ -195,6 +207,7 @@ pub struct Mesh {
     pub positions: Vec<Vertex>,
     pub colors: Vec<Color>,
     pub texture_coords: Vec<UV>,
+    pub normals: Vec<Normal>,
     pub indices: Vec<u32>,
     pub dirty: bool,
 }
@@ -206,17 +219,19 @@ impl Mesh {
             positions: vec![],
             colors: vec![],
             texture_coords: vec![],
+            normals: vec![],
             indices: vec![],
             dirty: true,
         }
     }
 
-    pub fn new(vertex_coords: Vec<Vertex>, colors: Vec<Color>, texture_coords: Vec<UV>, vertex_indices: Vec<u32>) -> Mesh {
+    pub fn new(vertex_coords: Vec<Vertex>, colors: Vec<Color>, texture_coords: Vec<UV>, normals: Vec<Normal>, vertex_indices: Vec<u32>) -> Mesh {
         Mesh {
-            vertices: Mesh::build_vertices(&vertex_coords, &colors, &texture_coords),
+            vertices: Mesh::build_vertices(&vertex_coords, &colors, &texture_coords, &normals),
             positions: vertex_coords,
             colors: colors,
             texture_coords: texture_coords,
+            normals: normals,
             indices: vertex_indices,
             dirty: true,
         }
@@ -227,7 +242,7 @@ impl Mesh {
     }
 
     fn build_vertex(&self, index: usize) -> Vertice {
-        let mut vert: Vertice = [0.0;9];
+        let mut vert: Vertice = [0.0;12];
 
         vert[0] = self.positions[index].x;
         vert[1] = self.positions[index].y;
@@ -238,11 +253,14 @@ impl Mesh {
         vert[6] = self.colors[index].a;
         vert[7] = self.texture_coords[index].u;
         vert[8] = self.texture_coords[index].v;
+        vert[9] = self.normals[index].x;
+        vert[10] = self.normals[index].y;
+        vert[11] = self.normals[index].z;
 
         return vert
     }
 
-    fn build_vertices(positions: &Vec<Vertex>, colors: &Vec<Color>, uvs: &Vec<UV>) -> Vec<f32> {
+    fn build_vertices(positions: &Vec<Vertex>, colors: &Vec<Color>, uvs: &Vec<UV>, normals: &Vec<Normal>) -> Vec<f32> {
         let mut vertices: Vec<f32> = vec![];
         for (i, pos) in positions.iter().enumerate() {
             vertices.push(pos.x);
@@ -254,6 +272,9 @@ impl Mesh {
             vertices.push(colors[i].a);
             vertices.push(uvs[i].u);
             vertices.push(uvs[i].v);
+            vertices.push(normals[i].x);
+            vertices.push(normals[i].y);
+            vertices.push(normals[i].z);
         }
 
         return vertices
@@ -287,6 +308,9 @@ impl Mesh {
         if self.texture_coords.len() > 0 {
             stride += std::mem::size_of::<UV>(); // 2 float per UV
         }
+        if self.normals.len() > 0 {
+            stride += std::mem::size_of::<Normal>(); // 3 float per normal
+        }
 
         return stride
     }
@@ -303,6 +327,10 @@ impl Mesh {
         2
     }
 
+    pub fn nb_elements_per_normal() -> i32 {
+        3
+    }
+
     pub fn vertex_offset(&self) -> usize {
         0
     }
@@ -313,6 +341,10 @@ impl Mesh {
 
     pub fn uv_offset(&self) -> usize {
         self.color_offset() + std::mem::size_of::<Color>()
+    }
+
+    pub fn normal_offset(&self) -> usize {
+        self.uv_offset() + std::mem::size_of::<Normal>()
     }
 }
 
@@ -330,7 +362,7 @@ mod tests {
         mesh_builder.add_color(Color::new(0.0, 1.0, 0.0)).add_color(Color::new(0.0, 0.0, 1.0)).add_color(Color::new(1.0, 1.0, 0.0));
         mesh_builder.add_uv(UV::new(1.0, 1.0)).add_uv(UV::new(1.0, 0.0)).add_uv(UV::new(0.0, 1.0));
         mesh_builder.add_uv(UV::new(1.0, 0.0)).add_uv(UV::new(0.0, 0.0)).add_uv(UV::new(0.0, 1.0));
-        mesh_builder.auto_index();
+        //mesh_builder.auto_index();
         let mesh = mesh_builder.commit();
         let indices: Vec<u32> = vec![0, 1, 2, 1, 3, 2];
         assert_eq!(mesh.indices, indices);
