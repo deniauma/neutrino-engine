@@ -9,6 +9,7 @@ use crate::graphics::states::*;
 use crate::graphics::entity::*;
 use crate::graphics::inputs::*;
 use crate::procedural::*;
+use crate::graphics::primitives::PrimitiveBuilder;
 
 struct GameEntity {}
 
@@ -38,11 +39,12 @@ impl EntityState for GameEntity {
             camera.position.x += speed;
         }
 
-        let deg_per_sec = 50.0;
-        let cam_pos = camera.position;
+        camera.position.y = 5.0;
+        camera.direction = cgmath::vec3(0.0, -0.5 , -1.0);
         let light = storage.get_mut_light();
-        light.rotate(cgmath::vec3(0.0, 0.0 ,0.0), cgmath::vec3(0.0, deg_per_sec * delta, 0.0));
-        // light.position = cam_pos;
+        light.position = cgmath::vec3(10.0, 10.0 , -10.0);
+        /* let deg_per_sec = 50.0;
+        light.rotate(cgmath::vec3(0.0, 0.0 ,0.0), cgmath::vec3(0.0, deg_per_sec * delta, 0.0)); */
     }
 
     fn on_delete(&mut self, data: &mut graphics::ComponentStorageManager){
@@ -134,6 +136,7 @@ fn example2() {
     let mut entity_builder = EntityBuilder::new();
     let start = Instant::now();
     let id = entity_builder.with_mesh(generate_mesh(&map)).build(&mut engine);
+    let plane = EntityBuilder::new().with_mesh(PrimitiveBuilder::plane(Color::new(24.0/255.0, 191.0/255.0, 214.0/255.0))).with_transform(Transform::new(cgmath::vec3(10.5, 0.8, -10.5), cgmath::vec3(0.0, 0.0, 0.0), cgmath::vec3(20.0, 0.0, 20.0))).build(&mut engine);
     let elapsed_time = start.elapsed();
     println!("Time to generate terrain: {} ms", elapsed_time.as_millis());
     engine.add_states(id, GameEntity{});
@@ -152,6 +155,6 @@ fn example3() {
 
 fn main() { 
     // example1();
-    // example2();
-    example3();
+    example2();
+    // example3();
 }

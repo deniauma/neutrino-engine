@@ -313,7 +313,7 @@ impl Window {
         }
         unsafe {
             gl::load_with(|symbol| self.gl_window.get_proc_address(symbol) as *const _);
-            gl::ClearColor(0.0, 0.0, 0.0, 1.0);
+            gl::ClearColor(0.8, 0.8, 0.8, 1.0);
             gl::Enable(gl::DEPTH_TEST);  
         }
         let gl_version = unsafe {

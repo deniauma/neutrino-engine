@@ -101,6 +101,13 @@ impl MeshBuilder {
         self
     }
 
+    pub fn add_color_from_vec(&mut self, color: Vec<Color>) -> &mut Self {
+        for c in color.iter() {
+            self.mesh.colors.push(*c);
+        }
+        self
+    }
+
     pub fn add_uv_from_vec(&mut self, uv: Vec<UV>) -> &mut Self {
         for u in uv.iter() {
             self.mesh.texture_coords.push(*u);
