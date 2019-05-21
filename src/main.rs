@@ -10,9 +10,7 @@ use crate::graphics::entity::*;
 use crate::graphics::inputs::*;
 use crate::procedural::*;
 
-struct GameEntity {
-    freq: f64,
-}
+struct GameEntity {}
 
 impl EntityState for GameEntity {
     fn on_create(&mut self, data: &mut graphics::ComponentStorageManager){
@@ -21,6 +19,9 @@ impl EntityState for GameEntity {
 
     fn on_update(&mut self, data: GameData, delta: f32){
         let (id, storage, input) = data;
+        let deg_per_sec = 50.0;
+        let light = storage.get_mut_light();
+        light.rotate(cgmath::vec3(0.0, 0.0 ,0.0), cgmath::vec3(0.0, deg_per_sec * delta, 0.0));
         /* let mesh = storage.get_mut_mesh(id).unwrap();
         self.freq += delta as f64;
         let map = heigth_map(100, 100, self.freq);
@@ -133,7 +134,7 @@ fn example2() {
     let id = entity_builder.with_mesh(generate_mesh(&map)).build(&mut engine);
     let elapsed_time = start.elapsed();
     println!("Time to generate terrain: {} ms", elapsed_time.as_millis());
-    engine.add_states(id, GameEntity{ freq: 1.0 });
+    engine.add_states(id, GameEntity{});
     engine.start_debug_server();
     engine.start();
 }
@@ -143,6 +144,7 @@ fn example3() {
     engine.init();
     let mut entity_builder = EntityBuilder::new();
     let id = entity_builder.with_cube_mesh(1.0).build(&mut engine);
+    engine.add_states(id, GameEntity{});
     engine.start();
 }
 

@@ -18,6 +18,7 @@ pub mod entity;
 pub mod camera;
 pub mod inputs;
 pub mod renderer;
+pub mod light;
 
 use self::transform::Transform;
 use self::mesh::*;
@@ -27,6 +28,7 @@ use self::primitives::*;
 use self::camera::Camera;
 use self::inputs::InputSystem;
 use self::renderer::RenderSystem;
+use self::light::Light;
 
 
 pub type Index = u32;
@@ -45,6 +47,7 @@ pub struct ComponentStorageManager {
     material_manager: HashMap<Index, Material>,
     update_manager: HashMap<Index, Box<SceneUpdate>>,
     camera: Camera,
+    light: Light,
 }
 
 impl ComponentStorageManager {
@@ -56,6 +59,7 @@ impl ComponentStorageManager {
             material_manager: HashMap::new(),
             update_manager: HashMap::new(),
             camera: Camera::default(),
+            light: Light::default(),
         }
     }
 
@@ -112,6 +116,10 @@ impl ComponentStorageManager {
 
     pub fn get_mut_camera(&mut self) -> &mut Camera {
         &mut self.camera
+    }
+
+    pub fn get_mut_light(&mut self) -> &mut Light {
+        &mut self.light
     }
 }
 
