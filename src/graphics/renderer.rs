@@ -51,8 +51,6 @@ impl RenderSystem {
                 gl::STATIC_DRAW,                                    // usage
             );
 
-            println!("{}", mesh.print_vertices());
-
             //Generate EBO only if indices are present
             if !mesh.indices.is_empty() {
                 println!("EBO generated!");
@@ -187,6 +185,7 @@ impl RenderSystem {
             material.shader.set_mat4("projection", projection_mat);
             material.shader.set_vec3("lightColor", storage.light.color);
             material.shader.set_vec3("lightPos", storage.light.position);
+            material.shader.set_vec3("viewPos", storage.camera.position);
 
             unsafe {
                 gl::BindVertexArray(gl_object.vao);

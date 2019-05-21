@@ -43,7 +43,7 @@ impl EntityBuilder {
     }
 
     pub fn with_cube_mesh(&mut self, size: f32) -> &mut Self {
-        self.mesh = PrimitiveBuilder::cube(Color::new(1.0, 0.0, 0.0));
+        self.mesh = PrimitiveBuilder::cube(Color::new(1.0, 0.5, 0.31));
         self.transform.scale *= size;
         self
     }

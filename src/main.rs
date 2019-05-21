@@ -19,9 +19,6 @@ impl EntityState for GameEntity {
 
     fn on_update(&mut self, data: GameData, delta: f32){
         let (id, storage, input) = data;
-        let deg_per_sec = 50.0;
-        let light = storage.get_mut_light();
-        light.rotate(cgmath::vec3(0.0, 0.0 ,0.0), cgmath::vec3(0.0, deg_per_sec * delta, 0.0));
         /* let mesh = storage.get_mut_mesh(id).unwrap();
         self.freq += delta as f64;
         let map = heigth_map(100, 100, self.freq);
@@ -40,7 +37,12 @@ impl EntityState for GameEntity {
         if input.is_key_pressed(Key::D) == ButtonState::PRESSED {
             camera.position.x += speed;
         }
-        
+
+        let deg_per_sec = 50.0;
+        let cam_pos = camera.position;
+        let light = storage.get_mut_light();
+        light.rotate(cgmath::vec3(0.0, 0.0 ,0.0), cgmath::vec3(0.0, deg_per_sec * delta, 0.0));
+        // light.position = cam_pos;
     }
 
     fn on_delete(&mut self, data: &mut graphics::ComponentStorageManager){

@@ -217,7 +217,6 @@ impl MeshBuilder {
         if self.mesh.vertices.is_empty() {
             self.mesh.vertices = Mesh::build_vertices(&self.mesh.positions, &self.mesh.colors, &self.mesh.texture_coords, &self.mesh.normals);
         }
-        println!("Vertex data: {:?}", self.mesh.vertices);
         /* println!("New index data: {:?}", self.mesh.indices);
         println!("Nb of vertices: {:?}", self.mesh.vertices.len()); */
         self.mesh.clone()

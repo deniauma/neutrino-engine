@@ -18,8 +18,8 @@ impl Camera {
 
     pub fn default() -> Self {
         Self {
-            position: Vector3::new(1.0, 2.0, 3.0),
-            direction: Vector3::new(0.0, -0.5, -1.0)
+            position: Vector3::new(0.5, 0.5, 3.0),
+            direction: Vector3::new(0.0, 0.0, -1.0)
         }
     }
 

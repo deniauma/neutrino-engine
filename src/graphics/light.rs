@@ -15,7 +15,7 @@ impl Light {
     }
 
     pub fn default() -> Self {
-        Self::new(1.0, 1.5, 2.0, 1.0, 1.0, 1.0)
+        Self::new(0.0, 0.0, 2.0, 1.0, 1.0, 1.0)
     }
 
     pub fn rotate(&mut self, center: Vector3<f32>, angles: Vector3<f32>) {
