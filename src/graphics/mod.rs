@@ -6,7 +6,7 @@ use glutin::GlContext;
 use std::collections::HashMap;
 use std::ffi::{CStr};
 use std::time::{Duration, Instant};
-use crate::server::debug;
+use crate::server::debug::DebugSystem;
 
 pub mod mesh;
 pub mod shader;
@@ -129,6 +129,7 @@ pub struct Engine {
     render_system: RenderSystem,
     states_system: StateSystem,
     input_system: InputSystem,
+    debug_system: Option<DebugSystem>,
     entity_count: Index,
 }
 
@@ -139,8 +140,17 @@ impl Engine {
             storage: ComponentStorageManager::new(),
             render_system: RenderSystem::new(),
             states_system: StateSystem::new(),
-            input_system: InputSystem::new() ,
+            input_system: InputSystem::new(),
+            debug_system: None,
             entity_count: 0,
+        }
+    }
+
+    pub fn enable_debug(&mut self) {
+        self.debug_system = Some(DebugSystem::new("0.0.0.0:3333"));
+        match &self.debug_system {
+            Some(debug) => debug.accept_connections(),
+            None => ()
         }
     }
 
@@ -150,12 +160,6 @@ impl Engine {
 
     pub fn start(&mut self) {
         self.main_loop();
-    }
-
-    pub fn start_debug_server(&self) {
-        std::thread::spawn(|| {
-            debug::open();
-        });
     }
 
     fn main_loop(&mut self) {
@@ -176,6 +180,10 @@ impl Engine {
             let delta = (delta_time.as_millis() as f32) / 1000.0;
             self.states_system.run_update_state(&mut self.storage, &self.input_system, delta);
             self.render_system.render(&mut self.storage);
+            match &self.debug_system {
+                Some(debug) => debug.execute(),
+                None => ()
+            }
             let frame_duration = start_frame.elapsed().as_millis();
             self.window.gl_window.swap_buffers().unwrap();
             if delta_time.subsec_micros() > 0 {

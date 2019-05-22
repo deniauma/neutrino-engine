@@ -129,18 +129,18 @@ fn example1() {
 }
 
 fn example2() {
-    let map = heigth_map(100, 100, 5.0);
+    let map = heigth_map(200, 200);
     // println!("Height map: {:?}", map);
     let mut engine = graphics::Engine::new();
     engine.init();
     let mut entity_builder = EntityBuilder::new();
     let start = Instant::now();
     let id = entity_builder.with_mesh(generate_mesh(&map)).build(&mut engine);
-    let plane = EntityBuilder::new().with_mesh(PrimitiveBuilder::plane(Color::new(24.0/255.0, 191.0/255.0, 214.0/255.0))).with_transform(Transform::new(cgmath::vec3(10.5, 0.8, -10.5), cgmath::vec3(0.0, 0.0, 0.0), cgmath::vec3(20.0, 0.0, 20.0))).build(&mut engine);
+    let plane = EntityBuilder::new().with_mesh(PrimitiveBuilder::plane(Color::new(14.0/255.0, 50.0/255.0, 214.0/255.0))).with_transform(Transform::new(cgmath::vec3(20.5, 0.8, -20.5), cgmath::vec3(0.0, 0.0, 0.0), cgmath::vec3(40.0, 0.0, 40.0))).build(&mut engine);
     let elapsed_time = start.elapsed();
     println!("Time to generate terrain: {} ms", elapsed_time.as_millis());
     engine.add_states(id, GameEntity{});
-    engine.start_debug_server();
+    engine.enable_debug();
     engine.start();
 }
 

@@ -4,18 +4,17 @@ use noise::{Perlin, NoiseFn};
 use crate::graphics::mesh::{MeshBuilder, Vertex, Mesh, Color, UV, Normal};
 use cgmath::prelude::*;
 
+pub mod terrain;
 
-pub fn heigth_map(width: usize, height: usize, freq: f64) -> Vec<Vec<f64>> {
+
+pub fn heigth_map(width: usize, height: usize) -> Vec<Vec<f64>> {
     let mut map: Vec<Vec<f64>> = Vec::new();
-    // let perlin = Perlin::new();
-    //let freq = 5.0;
     let noise = Noise::new();
     for x in 0 .. width {
         map.insert(x, Vec::new());
         for y in 0 .. height {
             let nx = (x as f64 / width as f64) - 0.5;
             let ny = (y as f64 / height as f64) - 0.5;
-            // map[x].insert(y, perlin.get([freq * nx, freq * ny]) / 2.0 + 0.5);
             map[x].insert(y, noise.get_elevation(nx, ny)); //map[x].insert(y, get_elevation(nx, ny));
         }
     }
@@ -41,7 +40,7 @@ impl Noise {
 
     pub fn get_elevation(&self, nx: f64, nz: f64) -> f64 {
         let mut e = 1.0 * self.get(1.0 * nx, 1.0 * nz) + 0.5 * self.get(2.0 * nx, 2.0 * nz) + 0.25 * self.get(4.0 * nx, 4.0 * nz);
-        e /= (1.0 + 0.5 + 0.25);
+        e /= 1.0 + 0.5 + 0.25;
         e.powf(1.4)
     }
 }
