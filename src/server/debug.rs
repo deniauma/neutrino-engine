@@ -2,12 +2,13 @@ use std::thread;
 use std::net::{TcpListener, TcpStream, Shutdown};
 use std::io::{Read, Write};
 use std::sync::mpsc::{channel, Receiver, Sender};
+use crate::graphics::{ComponentStorageManager};
 
 
 pub struct DebugSystem {
     listener: TcpListener,
-    receiver: Receiver<String>,
-    sender: Sender<String>,
+    receiver: Receiver<Task>,
+    sender: Sender<Task>,
 }
 
 impl DebugSystem {
@@ -43,21 +44,22 @@ impl DebugSystem {
         });
     }
     
-    pub fn execute(&self) {
-        if let Ok(command) = self.receiver.try_recv() {
-            println!("Command: {}", command);
+    pub fn pop_task(&self, data: &mut ComponentStorageManager) {
+        if let Ok(mut task) = self.receiver.try_recv() {
+            println!("Command: {}", task.command);
+            task.execute(data);
         }
     }
 }
 
 
-fn handle_client(mut stream: TcpStream, tx: Sender<String>) {
+fn handle_client(mut stream: TcpStream, tx: Sender<Task>) {
     let mut data = [0 as u8; 512]; // using 50 byte buffer
     while match stream.read(&mut data) {
         Ok(size) => {
             // echo everything!
-            stream.write(&data[0..size]).unwrap();
-            tx.send(String::from_utf8_lossy(&data).to_string()).unwrap();
+            // stream.write(&data[0..size]).unwrap();
+            tx.send(Task::new(String::from_utf8_lossy(&data[0..size]).to_string(), stream.try_clone().unwrap())).unwrap();
             stream.flush().unwrap();
             true
         },
@@ -67,4 +69,53 @@ fn handle_client(mut stream: TcpStream, tx: Sender<String>) {
             false
         }
     } {}
+}
+
+
+#[derive(Debug)]
+struct Task {
+    command: String,
+    stream: TcpStream
+}
+
+impl Task {
+    fn new(command: String, stream: TcpStream) -> Self {
+        Self {
+            command: command,
+            stream: stream
+        }
+    }
+
+    fn get_command(&self) -> DebugCommand {
+        DebugCommand::from(self.command.trim())
+    }
+
+    fn execute(&mut self, data: &mut ComponentStorageManager) {
+        let response: String = match self.get_command() {
+            DebugCommand::VERTICES => {
+                let vertices: usize = data.mesh_manager.iter().map(|(_, m)| {
+                    m.positions.len()
+                }).sum();
+                vertices.to_string()
+            },
+            DebugCommand::ILLEGAL => String::from("Unknown command")
+        };
+        self.stream.write(response.as_bytes()).unwrap();
+        self.stream.flush().unwrap();
+    }
+}
+
+#[derive(Debug, PartialEq)]
+enum DebugCommand {
+    VERTICES,
+    ILLEGAL,
+}
+
+impl From<&str> for DebugCommand {
+    fn from(c: &str) -> Self {
+        match c {
+            "vertices" => DebugCommand::VERTICES,
+            _ => DebugCommand::ILLEGAL
+        }
+    }
 }

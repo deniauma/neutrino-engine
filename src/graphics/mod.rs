@@ -41,7 +41,7 @@ pub struct SceneObject {
 impl SceneObject {}
 
 pub struct ComponentStorageManager {
-    mesh_manager: HashMap<Index, Mesh>,
+    pub mesh_manager: HashMap<Index, Mesh>,
     shader_manager: HashMap<Index, Shader>,
     transform_manager: HashMap<Index, Transform>,
     material_manager: HashMap<Index, Material>,
@@ -121,6 +121,7 @@ impl ComponentStorageManager {
     pub fn get_mut_light(&mut self) -> &mut Light {
         &mut self.light
     }
+
 }
 
 pub struct Engine {
@@ -181,7 +182,7 @@ impl Engine {
             self.states_system.run_update_state(&mut self.storage, &self.input_system, delta);
             self.render_system.render(&mut self.storage);
             match &self.debug_system {
-                Some(debug) => debug.execute(),
+                Some(debug) => debug.pop_task(&mut self.storage),
                 None => ()
             }
             let frame_duration = start_frame.elapsed().as_millis();
